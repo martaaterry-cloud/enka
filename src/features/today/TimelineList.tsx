@@ -11,6 +11,23 @@ interface TimelineListProps {
   onOpenCreate: (slotTime?: string) => void;
 }
 
+function parseTimeToMinutes(timeStr?: string): number | null {
+  if (!timeStr) return null;
+  // Clean estimates like "~15:45" or "~15:40–15:45" -> "15:45"
+  const cleaned = timeStr.replace(/[~]/g, '').trim();
+  const firstPart = cleaned.includes('–') ? cleaned.split('–')[1] : cleaned.includes('-') ? cleaned.split('-')[1] : cleaned;
+  const match = firstPart.match(/(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+}
+
+function formatGapDuration(minutes: number): string {
+  if (minutes < 60) return `~${minutes} min disponible`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `~${h} h ${m} min disponible` : `~${h} h disponible`;
+}
+
 export const TimelineList: React.FC<TimelineListProps> = ({
   activities,
   categories,
@@ -58,7 +75,7 @@ export const TimelineList: React.FC<TimelineListProps> = ({
         <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)' }}>
           Sin actividades programadas
         </h4>
-        <p style={{ fontSize: '0.78125rem', color: 'var(--text-muted)', marginTop: '2px', margin: '2px auto 12px auto' }}>
+        <p style={{ fontSize: '0.78125rem', color: 'var(--text-muted)', margin: '2px auto 12px auto' }}>
           Día completamente libre.
         </p>
         <button
@@ -87,20 +104,38 @@ export const TimelineList: React.FC<TimelineListProps> = ({
       {sortedActivities.map((act, idx) => {
         const cat = categoryMap.get(act.categoryId);
         const nextAct = sortedActivities[idx + 1];
+        const isLast = idx === sortedActivities.length - 1;
 
-        // Specific contextual gaps for Marta's Tuesday 29 Sept
-        const isAfterSyte = act.id === 'act-today-1' && nextAct?.id === 'act-today-2';
-        const isAfterPeluqueria = act.id === 'act-today-2' && idx === sortedActivities.length - 1;
+        // Gap calculations
+        const freeAfterTime = act.returnTravelTransition?.arrivalEstimate || act.endTime;
+        const freeAfterMinutes = parseTimeToMinutes(freeAfterTime);
+        const nextStartMinutes = nextAct ? parseTimeToMinutes(nextAct.startTime) : null;
+
+        const hasIntermediateGap = Boolean(
+          nextAct &&
+          freeAfterMinutes !== null &&
+          nextStartMinutes !== null &&
+          (nextStartMinutes - freeAfterMinutes) >= 45
+        );
+
+        const gapDurationMinutes = hasIntermediateGap && freeAfterMinutes && nextStartMinutes
+          ? nextStartMinutes - freeAfterMinutes
+          : 0;
+
+        const hasEveningFree = Boolean(
+          isLast &&
+          (act.isEndTimeUnknown || (freeAfterMinutes !== null && freeAfterMinutes <= 19 * 60))
+        );
 
         return (
           <React.Fragment key={act.id}>
             <TimelineItem
               activity={act}
               category={cat}
-              isLast={idx === sortedActivities.length - 1 && !isAfterPeluqueria}
+              isLast={isLast && !hasEveningFree}
             />
 
-            {/* Commute return with realistic estimated departure & arrival margins (NO false precision) */}
+            {/* Commute return with realistic estimated departure & arrival margins */}
             {act.returnTravelTransition && (
               <div
                 style={{
@@ -123,22 +158,26 @@ export const TimelineList: React.FC<TimelineListProps> = ({
               </div>
             )}
 
-            {/* Gap with approximate start/end */}
-            {isAfterSyte && (
+            {/* Intermediate Gap */}
+            {hasIntermediateGap && (
               <TimeGapIndicator
-                approximateStart="Aprox. desde 15:45"
-                approximateEnd="17:00"
-                durationDescription="~1 h 15 min disponible"
-                locationCity="Bullas"
-                onPlanInGap={() => onOpenCreate('15:45')}
+                approximateStart={act.returnTravelTransition ? `Aprox. desde ${act.returnTravelTransition.arrivalEstimate}` : act.endTime ? `Desde ${act.endTime}` : undefined}
+                approximateEnd={nextAct?.startTime}
+                durationDescription={formatGapDuration(gapDurationMinutes)}
+                locationCity={act.returnTravelTransition?.toLocation || act.locationCity || 'Bullas'}
+                onPlanInGap={() => onOpenCreate(freeAfterTime?.replace(/[~]/g, '').trim())}
               />
             )}
 
-            {/* Free evening after Peluquería (uncertain start, depending on salon exit) */}
-            {isAfterPeluqueria && (
+            {/* Free evening after last activity */}
+            {hasEveningFree && (
               <TimeGapIndicator
-                durationDescription="Tarde/noche libre (según salida de peluquería)"
-                locationCity="Bullas"
+                durationDescription={
+                  act.isEndTimeUnknown
+                    ? `Tarde/noche libre (según salida de ${act.title.toLowerCase()})`
+                    : 'Tarde/noche libre'
+                }
+                locationCity={act.returnTravelTransition?.toLocation || act.locationCity || 'Bullas'}
                 onPlanInGap={() => onOpenCreate()}
               />
             )}

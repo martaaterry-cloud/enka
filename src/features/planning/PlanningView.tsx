@@ -4,6 +4,7 @@ import { WeeklyGoalsCard } from './WeeklyGoalsCard';
 import { GymTrackerCard } from './GymTrackerCard';
 import { ProjectCard } from './ProjectCard';
 import { Icon } from '../../components/ui/Icon';
+import { getWeekRange, formatShortSpanishDate, formatLocalDateToISO } from '../../utils/dateUtils';
 
 export const PlanningView: React.FC = () => {
   const {
@@ -13,6 +14,26 @@ export const PlanningView: React.FC = () => {
     projects,
     openCreateModal
   } = useEnka();
+
+  const weekInfo = React.useMemo(() => getWeekRange(), []);
+
+  const tuesdayLabel = React.useMemo(() => {
+    const d = new Date(weekInfo.mondayDate);
+    d.setDate(d.getDate() + 1);
+    return formatShortSpanishDate(formatLocalDateToISO(d));
+  }, [weekInfo]);
+
+  const wednesdayLabel = React.useMemo(() => {
+    const d = new Date(weekInfo.mondayDate);
+    d.setDate(d.getDate() + 2);
+    return formatShortSpanishDate(formatLocalDateToISO(d));
+  }, [weekInfo]);
+
+  const thursdayLabel = React.useMemo(() => {
+    const d = new Date(weekInfo.mondayDate);
+    d.setDate(d.getDate() + 3);
+    return formatShortSpanishDate(formatLocalDateToISO(d));
+  }, [weekInfo]);
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -28,7 +49,7 @@ export const PlanningView: React.FC = () => {
       >
         <div>
           <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Semana 40 (28 Sep – 04 Oct)
+            {weekInfo.formattedRange}
           </span>
           <h1 style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginTop: '2px' }}>
             Montar mi semana
@@ -86,7 +107,7 @@ export const PlanningView: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ padding: '10px 12px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-surface-subtle)', border: '1px dashed var(--gap-border)', fontSize: '0.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Martes, 29 Sep</span>
+              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{tuesdayLabel}</span>
               <span style={{ color: 'var(--status-confirmed)', fontWeight: 600 }}>Tarde libre</span>
             </div>
             <div style={{ color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -96,7 +117,7 @@ export const PlanningView: React.FC = () => {
 
           <div style={{ padding: '10px 12px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-surface-subtle)', border: '1px dashed var(--gap-border)', fontSize: '0.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Miércoles, 30 Sep</span>
+              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{wednesdayLabel}</span>
               <span style={{ color: 'var(--status-confirmed)', fontWeight: 600 }}>~15:45 — 20:30 (~4.5h)</span>
             </div>
             <div style={{ color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -106,7 +127,7 @@ export const PlanningView: React.FC = () => {
 
           <div style={{ padding: '10px 12px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-surface-subtle)', border: '1px dashed var(--gap-border)', fontSize: '0.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Jueves, 01 Oct</span>
+              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{thursdayLabel}</span>
               <span style={{ color: 'var(--status-confirmed)', fontWeight: 600 }}>~15:45 — Noche (~6h)</span>
             </div>
             <div style={{ color: 'var(--text-muted)', marginTop: '2px' }}>

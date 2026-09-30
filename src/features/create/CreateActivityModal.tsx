@@ -3,6 +3,7 @@ import { useEnka } from '../../context';
 import { ModalSheet } from '../../components/ui/ModalSheet';
 import type { CertaintyLevel } from '../../models/activity';
 import { Icon } from '../../components/ui/Icon';
+import { getTodayDateString } from '../../utils/dateUtils';
 
 interface ActivityFormProps {
   initialDate: string;
@@ -14,7 +15,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
 
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState('trabajo');
-  const [date, setDate] = useState(initialDate || '2026-09-29');
+  const [date, setDate] = useState(initialDate || getTodayDateString());
   const [isAllDay, setIsAllDay] = useState(false);
   const [isTimePending, setIsTimePending] = useState(false);
   const [startTime, setStartTime] = useState('17:00');

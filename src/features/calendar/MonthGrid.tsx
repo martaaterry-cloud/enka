@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Activity } from '../../models/activity';
 import type { Category } from '../../models/category';
+import { formatLocalDateToISO, parseLocalDate } from '../../utils/dateUtils';
 
 interface MonthGridProps {
   currentYear: number;
@@ -69,12 +70,12 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
       map.set(act.date, list);
 
       if (act.isTrip && act.endDate) {
-        const start = new Date(act.date);
-        const end = new Date(act.endDate);
+        const start = parseLocalDate(act.date);
+        const end = parseLocalDate(act.endDate);
         const curr = new Date(start);
         curr.setDate(curr.getDate() + 1);
         while (curr <= end) {
-          const ds = curr.toISOString().split('T')[0];
+          const ds = formatLocalDateToISO(curr);
           const tripList = map.get(ds) || [];
           if (!tripList.some(a => a.id === act.id)) {
             tripList.push(act);

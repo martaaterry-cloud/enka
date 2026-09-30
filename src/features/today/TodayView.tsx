@@ -5,42 +5,54 @@ import type { Category } from '../../models/category';
 import { NextUpCard } from './NextUpCard';
 import { TimelineList } from './TimelineList';
 import { Icon } from '../../components/ui/Icon';
-
-function getDayGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 14) return 'Buenos días';
-  if (hour < 20) return 'Buenas tardes';
-  return 'Buenas noches';
-}
+import {
+  getTodayDateString,
+  formatSpanishDateHeader,
+  getDayGreeting,
+  getRelativeTimeText,
+  findNextUpcomingActivity
+} from '../../utils/dateUtils';
 
 export const TodayView: React.FC = () => {
   const {
     activities,
     categories,
-    selectedDate,
     selectedCategoryFilter,
     setSelectedCategoryFilter,
     openCreateModal
   } = useEnka();
 
+  const todayDateStr = React.useMemo(() => getTodayDateString(), []);
+  const todayHeader = React.useMemo(() => formatSpanishDateHeader(todayDateStr), [todayDateStr]);
+  const greeting = React.useMemo(() => getDayGreeting(), []);
+
   const todayActivities = React.useMemo(() => {
     return activities.filter((a: Activity) => {
-      const matchesDate = a.date === selectedDate;
+      const matchesDate = a.date === todayDateStr;
       const matchesCategory = selectedCategoryFilter ? a.categoryId === selectedCategoryFilter : true;
       return matchesDate && matchesCategory;
     });
-  }, [activities, selectedDate, selectedCategoryFilter]);
+  }, [activities, todayDateStr, selectedCategoryFilter]);
 
   const nextActivity = React.useMemo(() => {
-    return activities.find((a: Activity) => a.id === 'act-today-2') || todayActivities[0] || null;
-  }, [activities, todayActivities]);
+    return findNextUpcomingActivity(todayActivities);
+  }, [todayActivities]);
 
   const nextActivityCategory = React.useMemo(() => {
     if (!nextActivity) return undefined;
     return categories.find((c: Category) => c.id === nextActivity.categoryId);
   }, [nextActivity, categories]);
 
-  const greeting = getDayGreeting();
+  const relativeTimeText = React.useMemo(() => {
+    return getRelativeTimeText(nextActivity?.startTime);
+  }, [nextActivity]);
+
+  const daySummaryText = React.useMemo(() => {
+    if (todayActivities.length === 0) return 'Día completamente libre';
+    const hasUncertain = todayActivities.some(a => a.certainty !== 'confirmed' || a.isEndTimeUnknown);
+    if (hasUncertain) return 'Horarios con margen';
+    return 'Día planificado';
+  }, [todayActivities]);
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -75,7 +87,7 @@ export const TodayView: React.FC = () => {
               marginTop: '2px'
             }}
           >
-            Martes, 29 de septiembre
+            {todayHeader}
           </h1>
         </div>
 
@@ -95,14 +107,14 @@ export const TodayView: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--status-confirmed)' }} />
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              {todayActivities.length} actividades
+              {todayActivities.length} {todayActivities.length === 1 ? 'actividad' : 'actividades'}
             </span>
           </div>
           <div style={{ width: '1px', height: '14px', backgroundColor: 'var(--border-default)' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Icon name="Hourglass" size={13} color="var(--status-confirmed)" />
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Tarde libre tras peluquería
+              {daySummaryText}
             </span>
           </div>
         </div>
@@ -113,7 +125,7 @@ export const TodayView: React.FC = () => {
         <NextUpCard
           activity={nextActivity}
           category={nextActivityCategory}
-          relativeTimeText="En 1 h 24 min"
+          relativeTimeText={relativeTimeText}
         />
       </div>
 
@@ -187,7 +199,7 @@ export const TodayView: React.FC = () => {
         <TimelineList
           activities={todayActivities}
           categories={categories}
-          onOpenCreate={(_slotTime) => openCreateModal(selectedDate)}
+          onOpenCreate={(_slotTime) => openCreateModal(todayDateStr)}
         />
       </div>
     </div>

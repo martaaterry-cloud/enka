@@ -6,13 +6,16 @@ import { DayDetailPanel } from './DayDetailPanel';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { Icon } from '../../components/ui/Icon';
 
+import { getTodayDateString, parseLocalDate } from '../../utils/dateUtils';
+
 export const CalendarView: React.FC = () => {
   const { activities, categories, selectedDate, setSelectedDate, openCreateModal, getActivitiesForDate } = useEnka();
 
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
 
-  const [currentYear, setCurrentYear] = useState<number>(2026);
-  const [currentMonth, setCurrentMonth] = useState<number>(8); // 8 = Septiembre
+  const initialDateObj = React.useMemo(() => parseLocalDate(selectedDate || getTodayDateString()), [selectedDate]);
+  const [currentYear, setCurrentYear] = useState<number>(() => initialDateObj.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState<number>(() => initialDateObj.getMonth());
 
   const monthNames = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -94,9 +97,11 @@ export const CalendarView: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <button
             onClick={() => {
-              setCurrentYear(2026);
-              setCurrentMonth(8);
-              setSelectedDate('2026-09-29');
+              const todayStr = getTodayDateString();
+              const now = parseLocalDate(todayStr);
+              setCurrentYear(now.getFullYear());
+              setCurrentMonth(now.getMonth());
+              setSelectedDate(todayStr);
             }}
             style={{
               padding: '4px 10px',

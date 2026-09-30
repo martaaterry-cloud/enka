@@ -4,6 +4,7 @@ import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
 import { CertaintyIndicator } from '../../components/ui/CertaintyIndicator';
 import { OverlapCallout } from '../../components/ui/OverlapCallout';
+import { formatSpanishDateHeader } from '../../utils/dateUtils';
 
 interface DayDetailPanelProps {
   date: string; // YYYY-MM-DD
@@ -23,13 +24,7 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
   }, [categories]);
 
   const formattedDate = React.useMemo(() => {
-    const [year, month, day] = date.split('-').map(Number);
-    const d = new Date(year, month - 1, day);
-    return d.toLocaleDateString('es-ES', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long'
-    });
+    return formatSpanishDateHeader(date);
   }, [date]);
 
   return (

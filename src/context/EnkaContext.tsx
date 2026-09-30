@@ -11,6 +11,7 @@ import {
   INITIAL_PROJECTS,
   INITIAL_WEEKLY_SUMMARY
 } from '../data/mockData';
+import { getTodayDateString } from '../utils/dateUtils';
 import type { AppTab, ThemeMode } from './enkaContextCore';
 import { EnkaContext } from './enkaContextCore';
 
@@ -42,7 +43,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [activeTheme, theme]);
 
   const [currentTab, setCurrentTab] = useState<AppTab>('today');
-  const [selectedDate, setSelectedDate] = useState<string>('2026-09-29');
+  const [selectedDate, setSelectedDate] = useState<string>(() => getTodayDateString());
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
 
   const [activities, setActivities] = useState<Activity[]>(() => {

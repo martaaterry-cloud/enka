@@ -3,6 +3,7 @@ import type { AppTab, ThemeMode } from '../../context';
 import { useEnka } from '../../context';
 import type { IconName } from '../ui/Icon';
 import { Icon } from '../ui/Icon';
+import { getISOWeekNumber } from '../../utils/dateUtils';
 
 interface SidebarItem {
   id: AppTab;
@@ -20,6 +21,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 
 export const DesktopSidebar: React.FC = () => {
   const { currentTab, setCurrentTab, theme, setTheme, openCreateModal, weeklySummary } = useEnka();
+  const currentWeekNumber = React.useMemo(() => getISOWeekNumber(), []);
 
   return (
     <aside
@@ -160,7 +162,7 @@ export const DesktopSidebar: React.FC = () => {
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
           <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Semana 40
+            Semana {currentWeekNumber}
           </span>
           <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--status-confirmed)' }}>
             {weeklySummary.totalAvailableFreeHours}h libres
