@@ -27,6 +27,7 @@ export const MOCK_ACTIVITIES: Activity[] = [
     },
     certainty: 'confirmed',
     isRecurrent: true,
+    recurrenceSeriesId: 'series-trabajo-diario',
     recurrencePattern: 'Lunes a Viernes',
     notes: 'Jornada habitual.',
     createdAt: '2026-09-25T08:00:00Z'
@@ -66,6 +67,8 @@ export const MOCK_ACTIVITIES: Activity[] = [
     },
     certainty: 'confirmed',
     isRecurrent: true,
+    recurrenceSeriesId: 'series-trabajo-diario',
+    recurrencePattern: 'Lunes a Viernes',
     createdAt: '2026-09-25T08:00:00Z'
   },
   {
@@ -80,6 +83,7 @@ export const MOCK_ACTIVITIES: Activity[] = [
     locationCity: 'Bullas',
     certainty: 'confirmed',
     isRecurrent: true,
+    recurrenceSeriesId: 'series-entrenamientos-senior',
     recurrencePattern: 'Miércoles 20:30–21:50',
     notes: 'Senior Femenino.',
     createdAt: '2026-09-20T12:00:00Z'
@@ -105,6 +109,9 @@ export const MOCK_ACTIVITIES: Activity[] = [
       toLocation: 'Bullas'
     },
     certainty: 'confirmed',
+    isRecurrent: true,
+    recurrenceSeriesId: 'series-trabajo-diario',
+    recurrencePattern: 'Lunes a Viernes',
     createdAt: '2026-09-25T08:00:00Z'
   },
 
@@ -128,6 +135,9 @@ export const MOCK_ACTIVITIES: Activity[] = [
       toLocation: 'Bullas'
     },
     certainty: 'confirmed',
+    isRecurrent: true,
+    recurrenceSeriesId: 'series-trabajo-diario',
+    recurrencePattern: 'Lunes a Viernes',
     createdAt: '2026-09-25T08:00:00Z'
   },
   {
@@ -142,6 +152,7 @@ export const MOCK_ACTIVITIES: Activity[] = [
     locationCity: 'Bullas',
     certainty: 'confirmed',
     isRecurrent: true,
+    recurrenceSeriesId: 'series-entrenamientos-senior',
     recurrencePattern: 'Viernes 19:15–21:00',
     notes: 'Senior Femenino.',
     createdAt: '2026-09-20T12:00:00Z'
@@ -250,6 +261,7 @@ export const MOCK_ACTIVITIES: Activity[] = [
     locationCity: 'Bullas',
     certainty: 'confirmed',
     isRecurrent: true,
+    recurrenceSeriesId: 'series-ingles-b2',
     recurrencePattern: 'Lunes y Miércoles 19:30–21:00',
     knownOverlap: {
       withActivityTitle: 'Entrenamiento (20:30–22:00)',
@@ -271,6 +283,7 @@ export const MOCK_ACTIVITIES: Activity[] = [
     locationCity: 'Bullas',
     certainty: 'confirmed',
     isRecurrent: true,
+    recurrenceSeriesId: 'series-entrenamientos-senior',
     recurrencePattern: 'Lunes 20:30–22:00',
     knownOverlap: {
       withActivityTitle: 'Inglés B2 (19:30–21:00)',

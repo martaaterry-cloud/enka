@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEnka } from '../../context';
 import type { Activity } from '../../models/activity';
 import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
@@ -16,6 +17,7 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
   activities,
   categories
 }) => {
+  const { openDetailModal } = useEnka();
   const categoryMap = React.useMemo(() => {
     return new Map(categories.map(c => [c.id, c]));
   }, [categories]);
@@ -186,14 +188,20 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
                         return (
                           <span
                             key={act.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDetailModal(act);
+                            }}
                             style={{
                               fontSize: '0.6875rem',
                               padding: '2px 6px',
                               borderRadius: 'var(--radius-xs)',
-                              backgroundColor: cat?.bgColor || 'var(--bg-surface)',
-                              color: cat?.color || 'var(--text-primary)',
+                              backgroundColor: act.isCancelled ? 'rgba(239, 68, 68, 0.1)' : (cat?.bgColor || 'var(--bg-surface)'),
+                              color: act.isCancelled ? '#EF4444' : (cat?.color || 'var(--text-primary)'),
                               fontWeight: 600,
-                              whiteSpace: 'nowrap'
+                              whiteSpace: 'nowrap',
+                              textDecoration: act.isCancelled ? 'line-through' : 'none',
+                              cursor: 'pointer'
                             }}
                           >
                             {act.title}

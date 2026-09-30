@@ -65,6 +65,8 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [weeklySummary, setWeeklySummary] = useState<WeeklyPlanningSummary>(INITIAL_WEEKLY_SUMMARY);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
 
   const setTheme = (mode: ThemeMode) => {
     setThemeState(mode);
@@ -81,6 +83,16 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsCreateModalOpen(false);
   };
 
+  const openDetailModal = (activity: Activity) => {
+    setSelectedActivity(activity);
+    setIsDetailModalOpen(true);
+  };
+
+  const closeDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedActivity(null);
+  };
+
   const addActivity = (activityData: Omit<Activity, 'id' | 'createdAt'>) => {
     const newActivity: Activity = {
       ...activityData,
@@ -92,10 +104,188 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVITIES, JSON.stringify(updated));
   };
 
-  const deleteActivity = (id: string) => {
-    const updated = activities.filter(a => a.id !== id);
+  const updateActivity = (
+    id: string,
+    updates: Partial<Activity>,
+    scope: 'this_occurrence' | 'following_occurrences' | 'all_occurrences' = 'this_occurrence'
+  ) => {
+    const target = activities.find(a => a.id === id);
+    if (!target) return;
+
+    let updated: Activity[];
+
+    if (!target.isRecurrent || scope === 'this_occurrence') {
+      // Single occurrence edit / exception
+      updated = activities.map(a => {
+        if (a.id === id) {
+          return {
+            ...a,
+            ...updates,
+            isOccurrenceException: target.isRecurrent ? true : a.isOccurrenceException
+          };
+        }
+        return a;
+      });
+    } else if (scope === 'following_occurrences') {
+      const seriesId = target.recurrenceSeriesId;
+      const targetDate = target.date;
+      updated = activities.map(a => {
+        const matchesSeries = seriesId
+          ? a.recurrenceSeriesId === seriesId
+          : a.isRecurrent && a.title === target.title;
+
+        if (matchesSeries && a.date >= targetDate) {
+          // Preserve individual date, but update time, location, title, etc.
+          const { date: _ignoreDate, ...sharedUpdates } = updates;
+          return {
+            ...a,
+            ...sharedUpdates
+          };
+        }
+        return a;
+      });
+    } else {
+      // all_occurrences
+      const seriesId = target.recurrenceSeriesId;
+      updated = activities.map(a => {
+        const matchesSeries = seriesId
+          ? a.recurrenceSeriesId === seriesId
+          : a.isRecurrent && a.title === target.title;
+
+        if (matchesSeries) {
+          const { date: _ignoreDate, ...sharedUpdates } = updates;
+          return {
+            ...a,
+            ...sharedUpdates
+          };
+        }
+        return a;
+      });
+    }
+
     setActivities(updated);
     localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVITIES, JSON.stringify(updated));
+
+    // Update selectedActivity if open
+    if (selectedActivity && selectedActivity.id === id) {
+      setSelectedActivity({ ...selectedActivity, ...updates, isOccurrenceException: target.isRecurrent ? true : selectedActivity.isOccurrenceException });
+    }
+  };
+
+  const cancelActivity = (
+    id: string,
+    scope: 'this_occurrence' | 'following_occurrences' | 'all_occurrences' = 'this_occurrence',
+    reason?: string
+  ) => {
+    const target = activities.find(a => a.id === id);
+    if (!target) return;
+
+    let updated: Activity[];
+
+    if (!target.isRecurrent || scope === 'this_occurrence') {
+      updated = activities.map(a => {
+        if (a.id === id) {
+          return {
+            ...a,
+            isCancelled: true,
+            cancellationReason: reason || 'Cancelada',
+            isOccurrenceException: target.isRecurrent ? true : a.isOccurrenceException
+          };
+        }
+        return a;
+      });
+    } else if (scope === 'following_occurrences') {
+      const seriesId = target.recurrenceSeriesId;
+      const targetDate = target.date;
+      updated = activities.map(a => {
+        const matchesSeries = seriesId
+          ? a.recurrenceSeriesId === seriesId
+          : a.isRecurrent && a.title === target.title;
+
+        if (matchesSeries && a.date >= targetDate) {
+          return {
+            ...a,
+            isCancelled: true,
+            cancellationReason: reason || 'Cancelada'
+          };
+        }
+        return a;
+      });
+    } else {
+      const seriesId = target.recurrenceSeriesId;
+      updated = activities.map(a => {
+        const matchesSeries = seriesId
+          ? a.recurrenceSeriesId === seriesId
+          : a.isRecurrent && a.title === target.title;
+
+        if (matchesSeries) {
+          return {
+            ...a,
+            isCancelled: true,
+            cancellationReason: reason || 'Cancelada'
+          };
+        }
+        return a;
+      });
+    }
+
+    setActivities(updated);
+    localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVITIES, JSON.stringify(updated));
+
+    if (selectedActivity && selectedActivity.id === id) {
+      setSelectedActivity({
+        ...selectedActivity,
+        isCancelled: true,
+        cancellationReason: reason || 'Cancelada',
+        isOccurrenceException: target.isRecurrent ? true : selectedActivity.isOccurrenceException
+      });
+    }
+  };
+
+  const deleteActivity = (
+    id: string,
+    scope: 'this_occurrence' | 'following_occurrences' | 'all_occurrences' = 'this_occurrence'
+  ) => {
+    const target = activities.find(a => a.id === id);
+    if (!target) return;
+
+    let updated: Activity[];
+
+    if (!target.isRecurrent || scope === 'this_occurrence') {
+      updated = activities.filter(a => a.id !== id);
+    } else if (scope === 'following_occurrences') {
+      const seriesId = target.recurrenceSeriesId;
+      const targetDate = target.date;
+      updated = activities.filter(a => {
+        const matchesSeries = seriesId
+          ? a.recurrenceSeriesId === seriesId
+          : a.isRecurrent && a.title === target.title;
+
+        if (matchesSeries && a.date >= targetDate) {
+          return false;
+        }
+        return true;
+      });
+    } else {
+      const seriesId = target.recurrenceSeriesId;
+      updated = activities.filter(a => {
+        const matchesSeries = seriesId
+          ? a.recurrenceSeriesId === seriesId
+          : a.isRecurrent && a.title === target.title;
+
+        if (matchesSeries) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    setActivities(updated);
+    localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVITIES, JSON.stringify(updated));
+
+    if (selectedActivity && selectedActivity.id === id) {
+      closeDetailModal();
+    }
   };
 
   const toggleGymSession = (id: string) => {
@@ -165,7 +355,13 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isCreateModalOpen,
         openCreateModal,
         closeCreateModal,
+        selectedActivity,
+        isDetailModalOpen,
+        openDetailModal,
+        closeDetailModal,
         addActivity,
+        updateActivity,
+        cancelActivity,
         deleteActivity,
         toggleGymSession,
         toggleProjectSession,

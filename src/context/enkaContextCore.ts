@@ -26,8 +26,14 @@ export interface EnkaContextType {
   isCreateModalOpen: boolean;
   openCreateModal: (defaultDate?: string) => void;
   closeCreateModal: () => void;
+  selectedActivity: Activity | null;
+  isDetailModalOpen: boolean;
+  openDetailModal: (activity: Activity) => void;
+  closeDetailModal: () => void;
   addActivity: (activity: Omit<Activity, 'id' | 'createdAt'>) => void;
-  deleteActivity: (id: string) => void;
+  updateActivity: (id: string, updates: Partial<Activity>, scope?: 'this_occurrence' | 'following_occurrences' | 'all_occurrences') => void;
+  cancelActivity: (id: string, scope?: 'this_occurrence' | 'following_occurrences' | 'all_occurrences', reason?: string) => void;
+  deleteActivity: (id: string, scope?: 'this_occurrence' | 'following_occurrences' | 'all_occurrences') => void;
   toggleGymSession: (id: string) => void;
   toggleProjectSession: (projectId: string, sessionId: string) => void;
   getActivitiesForDate: (date: string) => Activity[];

@@ -6,6 +6,7 @@ import { CalendarView } from './features/calendar/CalendarView';
 import { PlanningView } from './features/planning/PlanningView';
 import { MoreView } from './features/more/MoreView';
 import { CreateActivityModal } from './features/create/CreateActivityModal';
+import { ActivityDetailModal } from './features/detail/ActivityDetailModal';
 import './styles/global.css';
 
 const MainRouter: React.FC = () => {
@@ -18,6 +19,7 @@ const MainRouter: React.FC = () => {
       {currentTab === 'planning' && <PlanningView />}
       {currentTab === 'more' && <MoreView />}
       <CreateActivityModal />
+      <ActivityDetailModal />
     </AppLayout>
   );
 };

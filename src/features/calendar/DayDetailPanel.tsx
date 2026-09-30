@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEnka } from '../../context';
 import type { Activity } from '../../models/activity';
 import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
@@ -19,6 +20,7 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
   categories,
   onOpenCreate
 }) => {
+  const { openDetailModal } = useEnka();
   const categoryMap = React.useMemo(() => {
     return new Map(categories.map(c => [c.id, c]));
   }, [categories]);
@@ -92,6 +94,7 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
             return (
               <div
                 key={act.id}
+                onClick={() => openDetailModal(act)}
                 style={{
                   padding: '12px 14px',
                   borderRadius: 'var(--radius-md)',
@@ -99,21 +102,48 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
                   border: '1px solid var(--border-subtle)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '6px'
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'var(--transition-fast)'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                  <div>
-                    <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <h4
+                      style={{
+                        fontSize: '0.875rem',
+                        fontWeight: 700,
+                        color: 'var(--text-primary)',
+                        textDecoration: act.isCancelled ? 'line-through' : 'none',
+                        opacity: act.isCancelled ? 0.6 : 1
+                      }}
+                    >
                       {act.title}
                     </h4>
+                    {act.isCancelled && (
+                      <span
+                        style={{
+                          fontSize: '0.625rem',
+                          fontWeight: 700,
+                          color: '#EF4444',
+                          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                          padding: '1px 5px',
+                          borderRadius: 'var(--radius-xs)'
+                        }}
+                      >
+                        Cancelada
+                      </span>
+                    )}
                     {cat && (
                       <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: cat.color }}>
                         {cat.name}
                       </span>
                     )}
                   </div>
-                  <CertaintyIndicator certainty={act.certainty} customNote={act.certaintyNote} size="sm" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <CertaintyIndicator certainty={act.certainty} customNote={act.certaintyNote} size="sm" />
+                    <Icon name="ChevronRight" size={14} color="var(--text-muted)" />
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>

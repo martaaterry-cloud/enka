@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEnka } from '../../context';
 import type { Activity } from '../../models/activity';
 import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
@@ -15,6 +16,8 @@ export const NextUpCard: React.FC<NextUpCardProps> = ({
   category,
   relativeTimeText = 'A continuación'
 }) => {
+  const { openDetailModal } = useEnka();
+
   if (!activity) {
     return (
       <div
@@ -39,6 +42,7 @@ export const NextUpCard: React.FC<NextUpCardProps> = ({
 
   return (
     <div
+      onClick={() => openDetailModal(activity)}
       style={{
         padding: '12px 16px',
         borderRadius: 'var(--radius-md)',
@@ -50,7 +54,8 @@ export const NextUpCard: React.FC<NextUpCardProps> = ({
         justifyContent: 'space-between',
         marginBottom: '20px',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        cursor: 'pointer'
       }}
     >
       <div

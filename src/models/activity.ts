@@ -55,9 +55,14 @@ export interface Activity {
   isTrip?: boolean;
   tripImpacts?: string[];
 
-  // Recurrence
+  // Recurrence & Exceptions
   isRecurrent?: boolean;
+  recurrenceSeriesId?: string;
   recurrencePattern?: string;
+  isOccurrenceException?: boolean;
+  originalDate?: string;
+  isCancelled?: boolean;
+  cancellationReason?: string;
 
   notes?: string;
   createdAt: string;

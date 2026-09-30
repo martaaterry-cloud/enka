@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useEnka } from '../../context';
 import type { Activity } from '../../models/activity';
 import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
@@ -16,8 +17,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   category,
   isLast = false
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const hasExtraDetails = Boolean(activity.notes || activity.tripImpacts?.length || activity.recurrencePattern);
+  const { openDetailModal } = useEnka();
 
   return (
     <div
@@ -127,7 +127,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
 
       {/* Main Card */}
       <div
-        onClick={() => hasExtraDetails && setIsExpanded(!isExpanded)}
+        onClick={() => openDetailModal(activity)}
         style={{
           flex: 1,
           backgroundColor: 'var(--bg-surface)',
@@ -135,7 +135,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
           borderRadius: 'var(--radius-md)',
           padding: '10px 12px',
           boxShadow: 'var(--shadow-sm)',
-          cursor: hasExtraDetails ? 'pointer' : 'default',
+          cursor: 'pointer',
           transition: 'var(--transition-fast)'
         }}
       >
@@ -157,11 +157,28 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
                 lineHeight: 1.25,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                textDecoration: activity.isCancelled ? 'line-through' : 'none',
+                opacity: activity.isCancelled ? 0.6 : 1
               }}
             >
               {activity.title}
             </h4>
+            {activity.isCancelled && (
+              <span
+                style={{
+                  fontSize: '0.625rem',
+                  fontWeight: 700,
+                  color: '#EF4444',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  padding: '1px 5px',
+                  borderRadius: 'var(--radius-xs)',
+                  flexShrink: 0
+                }}
+              >
+                Cancelada
+              </span>
+            )}
             {category && (
               <span
                 style={{
@@ -179,7 +196,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
             )}
           </div>
 
-          <div style={{ flexShrink: 0 }}>
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
             {activity.certainty !== 'confirmed' && (
               <CertaintyIndicator
                 certainty={activity.certainty}
@@ -187,6 +204,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
                 size="sm"
               />
             )}
+            <Icon name="ChevronRight" size={14} color="var(--text-muted)" />
           </div>
         </div>
 
@@ -253,20 +271,20 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
           />
         )}
 
-        {/* Expandable Secondary Notes (on click) */}
-        {isExpanded && (
+        {/* Secondary Notes & Pattern if present */}
+        {(activity.notes || activity.recurrencePattern) && (
           <div
             style={{
-              marginTop: '8px',
+              marginTop: '6px',
               paddingTop: '6px',
               borderTop: '1px solid var(--border-subtle)',
               fontSize: '0.71875rem',
               color: 'var(--text-muted)'
             }}
           >
-            {activity.notes && <p style={{ lineHeight: 1.35 }}>{activity.notes}</p>}
+            {activity.notes && <p style={{ lineHeight: 1.35, margin: 0 }}>{activity.notes}</p>}
             {activity.recurrencePattern && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', color: 'var(--text-dim)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: activity.notes ? '4px' : 0, color: 'var(--text-dim)' }}>
                 <Icon name="Repeat" size={11} />
                 <span>{activity.recurrencePattern}</span>
               </div>
