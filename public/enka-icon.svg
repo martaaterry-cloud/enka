@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="128" fill="#18181B"/>
+  <circle cx="256" cy="256" r="180" stroke="#3F3F46" stroke-width="8" stroke-dasharray="16 16"/>
+  <!-- Interlocking geometric shapes representing time fitting into real life -->
+  <path d="M160 160H300C326.51 160 348 181.49 348 208V208C348 234.51 326.51 256 300 256H160V160Z" fill="#10B981" fill-opacity="0.9"/>
+  <path d="M212 256H352C378.51 256 400 277.49 400 304V304C400 330.51 378.51 352 352 352H212V256Z" fill="#6366F1" fill-opacity="0.9"/>
+  <circle cx="160" cy="208" r="28" fill="#F59E0B"/>
+  <circle cx="352" cy="304" r="28" fill="#14B8A6"/>
+</svg>
