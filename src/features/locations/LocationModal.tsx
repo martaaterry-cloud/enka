@@ -500,10 +500,10 @@ export const LocationModal: React.FC<LocationModalProps> = ({
     <ModalSheet
       isOpen={isOpen}
       onClose={onClose}
-      title={initialLocation ? 'Editar Ubicación' : 'Nueva Ubicación'}
-      subtitle="Lugar de referencia para actividades y desplazamientos."
+      variant="form"
+      title={initialLocation ? 'Editar ubicación' : 'Nueva ubicación'}
       icon="MapPin"
-      maxWidth="480px"
+      maxWidth="560px"
     >
       <LocationForm
         key={initialLocation?.id || 'new-location'}

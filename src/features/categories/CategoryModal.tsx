@@ -98,12 +98,12 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {/* Error message */}
       {errorMessage && (
         <div
           style={{
-            padding: '9px 12px',
+            padding: '8px 10px',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
             border: '1px solid rgba(239, 68, 68, 0.25)',
@@ -114,14 +114,14 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             gap: '8px',
           }}
         >
-          <Icon name="AlertCircle" size={16} color="#EF4444" />
+          <Icon name="AlertCircle" size={15} color="#EF4444" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {/* Name input */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <label style={{ fontSize: '0.78125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
           Nombre *
         </label>
         <input
@@ -133,27 +133,28 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           disabled={isSaving}
           style={{
             width: '100%',
-            padding: '10px 12px',
+            padding: '9px 12px',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--bg-surface-subtle)',
             border: '1px solid var(--border-default)',
             color: 'var(--text-primary)',
             outline: 'none',
-            fontSize: '0.9375rem',
+            fontSize: '0.875rem',
+            boxSizing: 'border-box'
           }}
         />
       </div>
 
       {/* Color selection */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <label style={{ fontSize: '0.78125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
           Color
         </label>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(38px, 1fr))',
-            gap: '8px',
+            gridTemplateColumns: 'repeat(6, 1fr)',
+            gap: '6px',
           }}
         >
           {CURATED_COLORS.map((c) => (
@@ -162,7 +163,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
               type="button"
               onClick={() => setColor(c)}
               style={{
-                height: '36px',
+                height: '32px',
                 borderRadius: 'var(--radius-sm)',
                 backgroundColor: c,
                 border: color === c ? '2.5px solid var(--text-primary)' : '2px solid transparent',
@@ -174,23 +175,23 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
               }}
               aria-label={`Seleccionar color ${c}`}
             >
-              {color === c && <Icon name="Check" size={16} color="#ffffff" strokeWidth={3} />}
+              {color === c && <Icon name="Check" size={14} color="#ffffff" strokeWidth={3} />}
             </button>
           ))}
         </div>
       </div>
 
       {/* Icon selection */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <label style={{ fontSize: '0.78125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
           Icono
         </label>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',
-            gap: '6px',
-            maxHeight: '135px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(36px, 1fr))',
+            gap: '5px',
+            maxHeight: '110px',
             overflowY: 'auto',
             padding: '6px',
             backgroundColor: 'var(--bg-surface-subtle)',
@@ -204,7 +205,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
               type="button"
               onClick={() => setIconName(ic)}
               style={{
-                height: '38px',
+                height: '34px',
                 borderRadius: 'var(--radius-sm)',
                 backgroundColor: iconName === ic ? 'var(--bg-surface)' : 'transparent',
                 border:
@@ -220,7 +221,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
               }}
               aria-label={`Seleccionar icono ${ic}`}
             >
-              <Icon name={ic} size={18} />
+              <Icon name={ic} size={16} />
             </button>
           ))}
         </div>
@@ -232,7 +233,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           display: 'flex',
           gap: '8px',
           justifyContent: 'flex-end',
-          marginTop: '6px',
+          marginTop: '4px',
           paddingTop: '10px',
           borderTop: '1px solid var(--border-subtle)',
         }}
@@ -243,12 +244,12 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           onClick={onClose}
           style={{
             flex: 1,
-            padding: '9px 14px',
+            padding: '9px 12px',
             borderRadius: 'var(--radius-sm)',
             backgroundColor: 'var(--bg-surface-subtle)',
             border: '1px solid var(--border-default)',
             color: 'var(--text-secondary)',
-            fontSize: '0.875rem',
+            fontSize: '0.8125rem',
             fontWeight: 600,
             cursor: isSaving ? 'not-allowed' : 'pointer',
           }}
@@ -260,11 +261,11 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           disabled={isSaving}
           style={{
             flex: 1,
-            padding: '9px 16px',
+            padding: '9px 14px',
             borderRadius: 'var(--radius-sm)',
             backgroundColor: 'var(--text-primary)',
             color: 'var(--text-inverse)',
-            fontSize: '0.875rem',
+            fontSize: '0.8125rem',
             fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
@@ -274,7 +275,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             opacity: isSaving ? 0.7 : 1,
           }}
         >
-          {isSaving && <Icon name="Loader2" size={15} className="animate-spin" />}
+          {isSaving && <Icon name="Loader2" size={14} className="animate-spin" />}
           <span>{initialCategory ? 'Guardar' : 'Crear'}</span>
         </button>
       </div>
@@ -294,11 +295,11 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     <ModalSheet
       isOpen={isOpen}
       onClose={onClose}
-      title={initialCategory ? 'Editar Categoría' : 'Nueva Categoría'}
-      subtitle="Organiza tus actividades con colores y símbolos claros."
+      variant="compact"
+      title={initialCategory ? 'Editar categoría' : 'Nueva categoría'}
       icon={(initialCategory?.icon_name as IconName) || 'Tag'}
       iconColor={initialCategory?.color || CURATED_COLORS[0]}
-      maxWidth="440px"
+      maxWidth="400px"
     >
       <CategoryForm
         key={initialCategory?.id || 'new-category'}

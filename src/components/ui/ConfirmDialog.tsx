@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from './Icon';
 
 interface ConfirmDialogProps {
@@ -24,9 +25,23 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
 
-  return (
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+      };
+    }
+  }, [isOpen]);
+
+  if (!isOpen || typeof document === 'undefined') return null;
+
+  const content = (
     <div
       role="alertdialog"
       aria-modal="true"
@@ -42,7 +57,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         justifyContent: 'center',
         padding: 'max(16px, env(safe-area-inset-top, 16px)) max(16px, env(safe-area-inset-right, 16px)) max(16px, env(safe-area-inset-bottom, 16px)) max(16px, env(safe-area-inset-left, 16px))',
         boxSizing: 'border-box',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget && !isLoading) onCancel();
@@ -52,7 +67,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         className="animate-fade-in"
         style={{
           width: '100%',
-          maxWidth: '360px',
+          maxWidth: '380px',
+          height: 'auto',
           maxHeight: 'min(88dvh, calc(100dvh - 32px))',
           backgroundColor: 'var(--bg-surface)',
           border: '1px solid var(--border-default)',
@@ -63,7 +79,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           flexDirection: 'column',
           gap: '14px',
           margin: 'auto',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -89,13 +105,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               color={isDestructive ? '#EF4444' : undefined}
             />
           </div>
-          <div style={{ minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
             <h3
               style={{
                 fontSize: '0.9375rem',
                 fontWeight: 700,
                 color: 'var(--text-primary)',
                 letterSpacing: '-0.01em',
+                margin: 0,
               }}
             >
               {title}
@@ -105,6 +122,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 fontSize: '0.78125rem',
                 color: 'var(--text-secondary)',
                 marginTop: '4px',
+                marginBottom: 0,
                 lineHeight: 1.4,
               }}
             >
@@ -127,7 +145,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             onClick={onCancel}
             style={{
               flex: 1,
-              padding: '8px 12px',
+              padding: '9px 12px',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--bg-surface-subtle)',
               border: '1px solid var(--border-default)',
@@ -145,7 +163,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             onClick={onConfirm}
             style={{
               flex: 1,
-              padding: '8px 14px',
+              padding: '9px 14px',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: isDestructive ? '#EF4444' : 'var(--text-primary)',
               color: '#ffffff',
@@ -166,4 +184,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 };

@@ -378,10 +378,10 @@ export const CreateActivityModal: React.FC = () => {
     <ModalSheet
       isOpen={isCreateModalOpen}
       onClose={closeCreateModal}
-      title="Nueva Actividad"
-      subtitle="Organiza tu tiempo con flexibilidad y contexto real."
+      variant="form"
+      title="Nueva actividad"
       icon="Plus"
-      maxWidth="480px"
+      maxWidth="560px"
     >
       <ActivityForm initialDate={selectedDate} onClose={closeCreateModal} />
     </ModalSheet>

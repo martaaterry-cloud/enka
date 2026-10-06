@@ -779,6 +779,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             setIsScopeModalOpen(false);
             setPendingAction(null);
           }}
+          variant="compact"
           title={
             pendingAction === 'edit'
               ? '¿Qué quieres modificar?'
@@ -787,7 +788,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
               : '¿Qué quieres eliminar?'
           }
           subtitle={`Actividad recurrente · ${activity.title}`}
-          maxWidth="460px"
+          maxWidth="420px"
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>
@@ -905,8 +906,9 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
         <ModalSheet
           isOpen={isDeleteConfirmOpen}
           onClose={() => setIsDeleteConfirmOpen(false)}
+          variant="compact"
           title="¿Eliminar actividad?"
-          maxWidth="400px"
+          maxWidth="380px"
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: 0 }}>
@@ -960,8 +962,9 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
         <ModalSheet
           isOpen={isCancelConfirmOpen}
           onClose={() => setIsCancelConfirmOpen(false)}
+          variant="compact"
           title={activity.isCancelled ? '¿Reanudar actividad?' : '¿Cancelar actividad?'}
-          maxWidth="400px"
+          maxWidth="380px"
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: 0 }}>
@@ -1026,8 +1029,10 @@ export const ActivityDetailModal: React.FC = () => {
     <ModalSheet
       isOpen={isDetailModalOpen}
       onClose={closeDetailModal}
+      variant="form"
       title="Detalle de actividad"
       subtitle={`${getRelativeDayLabel(selectedActivity.date)} · ${formatSpanishDateHeader(selectedActivity.date)}`}
+      maxWidth="560px"
     >
       <ActivityDetailContent
         key={`${selectedActivity.id}-${selectedActivity.date}-${selectedActivity.startTime}-${selectedActivity.isCancelled ? 'c' : 'a'}`}
