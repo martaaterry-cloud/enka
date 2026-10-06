@@ -4,6 +4,8 @@ import { useEnka, useAuth } from '../../context';
 import type { IconName } from '../../components/ui/Icon';
 import { Icon } from '../../components/ui/Icon';
 import { enkaRepository } from '../../services/enka';
+import { CategoryManagementSection } from '../categories/CategoryManagementSection';
+import { LocationManagementSection } from '../locations/LocationManagementSection';
 
 type SectionId = 'menu' | 'lugares' | 'rutinas' | 'proyectos' | 'categorias' | 'ajustes';
 
@@ -16,7 +18,7 @@ interface SectionItem {
 }
 
 export const MoreView: React.FC = () => {
-  const { theme, setTheme, locations, categories, projects } = useEnka();
+  const { theme, setTheme, projects } = useEnka();
   const { user, signOut } = useAuth();
   const [currentSection, setCurrentSection] = useState<SectionId>('menu');
   const [diagnosticRunning, setDiagnosticRunning] = useState<boolean>(false);
@@ -36,9 +38,8 @@ export const MoreView: React.FC = () => {
     {
       id: 'lugares',
       title: 'Lugares y Logística',
-      subtitle: 'Base en Bullas y ubicaciones habituales',
+      subtitle: 'Ubicaciones guardadas en Supabase',
       icon: 'MapPin',
-      badge: `${locations.length} lugares`
     },
     {
       id: 'rutinas',
@@ -57,9 +58,8 @@ export const MoreView: React.FC = () => {
     {
       id: 'categorias',
       title: 'Categorías y Colores',
-      subtitle: 'Organización visual de actividades',
+      subtitle: 'Categorías personales en Supabase',
       icon: 'Palette',
-      badge: `${categories.length}`
     },
     {
       id: 'ajustes',
@@ -184,55 +184,7 @@ export const MoreView: React.FC = () => {
       {/* SUB-SECTIONS */}
 
       {/* 1. LUGARES */}
-      {currentSection === 'lugares' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ padding: '12px 14px', backgroundColor: 'var(--bg-surface-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-            <strong>Base principal: Bullas (Murcia).</strong> Lugares de referencia para calcular márgenes y desplazamientos.
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {locations.map(loc => (
-              <div
-                key={loc.id}
-                style={{
-                  padding: '14px 16px',
-                  backgroundColor: 'var(--bg-surface)',
-                  border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-md)',
-                  boxShadow: 'var(--shadow-sm)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Icon name="MapPin" size={16} color="var(--text-primary)" />
-                    <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {loc.name}
-                    </h3>
-                  </div>
-                  {loc.isHomeBase && (
-                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
-                      Base
-                    </span>
-                  )}
-                </div>
-
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                  {loc.city} {loc.defaultTravelFromHomeMinutes > 0 && `· ~${loc.defaultTravelFromHomeMinutes} min de trayecto habitual`}
-                </div>
-
-                {loc.notes && (
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    {loc.notes}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {currentSection === 'lugares' && <LocationManagementSection />}
 
       {/* 2. RUTINAS */}
       {currentSection === 'rutinas' && (
@@ -320,43 +272,7 @@ export const MoreView: React.FC = () => {
       )}
 
       {/* 4. CATEGORÍAS */}
-      {currentSection === 'categorias' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' }}>
-          {categories.map(cat => (
-            <div
-              key={cat.id}
-              style={{
-                padding: '12px 14px',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-default)',
-                borderRadius: 'var(--radius-md)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px'
-              }}
-            >
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: 'var(--radius-xs)',
-                  backgroundColor: cat.bgColor,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <Icon name={cat.iconName} size={16} color={cat.color} />
-              </div>
-              <div>
-                <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  {cat.name}
-                </h4>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {currentSection === 'categorias' && <CategoryManagementSection />}
 
       {/* 5. AJUSTES */}
       {currentSection === 'ajustes' && (

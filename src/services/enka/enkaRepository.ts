@@ -18,13 +18,41 @@ export interface RepositoryQueryResult<T> {
   error: Error | null;
 }
 
+export interface RepositorySingleResult<T> {
+  data: T | null;
+  error: Error | null;
+}
+
+export interface RepositoryMutationResult {
+  success: boolean;
+  error: Error | null;
+}
+
+async function getAuthenticatedUserId(): Promise<string> {
+  const supabase = getSupabase();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error('Usuario no autenticado en Supabase.');
+  }
+
+  return user.id;
+}
+
 export const enkaRepository = {
+  // ============================================================================
+  // CATEGORIES CRUD
+  // ============================================================================
   async fetchCategories(): Promise<RepositoryQueryResult<DbCategory>> {
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('enka_categories')
       .select('*')
-      .order('sort_order', { ascending: true });
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
 
     if (error) {
       return { data: null, error: new Error(error.message) };
@@ -32,11 +60,94 @@ export const enkaRepository = {
     return { data: (data as DbCategory[]) || [], error: null };
   },
 
+  async createCategory(
+    category: Omit<DbCategory, 'id' | 'user_id' | 'created_at' | 'updated_at'>
+  ): Promise<RepositorySingleResult<DbCategory>> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+
+      const { data, error } = await supabase
+        .from('enka_categories')
+        .insert({
+          ...category,
+          user_id: userId,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        return { data: null, error: new Error(error.message) };
+      }
+      return { data: data as DbCategory, error: null };
+    } catch (err: unknown) {
+      return {
+        data: null,
+        error: err instanceof Error ? err : new Error(String(err)),
+      };
+    }
+  },
+
+  async updateCategory(
+    id: string,
+    updates: Partial<Omit<DbCategory, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+  ): Promise<RepositorySingleResult<DbCategory>> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+
+      const { data, error } = await supabase
+        .from('enka_categories')
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        return { data: null, error: new Error(error.message) };
+      }
+      return { data: data as DbCategory, error: null };
+    } catch (err: unknown) {
+      return {
+        data: null,
+        error: err instanceof Error ? err : new Error(String(err)),
+      };
+    }
+  },
+
+  async deleteCategory(id: string): Promise<RepositoryMutationResult> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+
+      const { error } = await supabase
+        .from('enka_categories')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+
+      if (error) {
+        return { success: false, error: new Error(error.message) };
+      }
+      return { success: true, error: null };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error(String(err)),
+      };
+    }
+  },
+
+  // ============================================================================
+  // LOCATIONS CRUD
+  // ============================================================================
   async fetchLocations(): Promise<RepositoryQueryResult<DbLocation>> {
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('enka_locations')
       .select('*')
+      .order('is_home_base', { ascending: false })
       .order('name', { ascending: true });
 
     if (error) {
@@ -45,6 +156,88 @@ export const enkaRepository = {
     return { data: (data as DbLocation[]) || [], error: null };
   },
 
+  async createLocation(
+    location: Omit<DbLocation, 'id' | 'user_id' | 'created_at' | 'updated_at'>
+  ): Promise<RepositorySingleResult<DbLocation>> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+
+      const { data, error } = await supabase
+        .from('enka_locations')
+        .insert({
+          ...location,
+          user_id: userId,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        return { data: null, error: new Error(error.message) };
+      }
+      return { data: data as DbLocation, error: null };
+    } catch (err: unknown) {
+      return {
+        data: null,
+        error: err instanceof Error ? err : new Error(String(err)),
+      };
+    }
+  },
+
+  async updateLocation(
+    id: string,
+    updates: Partial<Omit<DbLocation, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+  ): Promise<RepositorySingleResult<DbLocation>> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+
+      const { data, error } = await supabase
+        .from('enka_locations')
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        return { data: null, error: new Error(error.message) };
+      }
+      return { data: data as DbLocation, error: null };
+    } catch (err: unknown) {
+      return {
+        data: null,
+        error: err instanceof Error ? err : new Error(String(err)),
+      };
+    }
+  },
+
+  async deleteLocation(id: string): Promise<RepositoryMutationResult> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+
+      const { error } = await supabase
+        .from('enka_locations')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+
+      if (error) {
+        return { success: false, error: new Error(error.message) };
+      }
+      return { success: true, error: null };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error(String(err)),
+      };
+    }
+  },
+
+  // ============================================================================
+  // OTHER READ-ONLY DOMAIN ENTITIES
+  // ============================================================================
   async fetchProjects(): Promise<RepositoryQueryResult<DbProject>> {
     const supabase = getSupabase();
     const { data, error } = await supabase
@@ -215,8 +408,8 @@ export const enkaRepository = {
         } else {
           results[table] = { count: data ? data.length : 0, error: null };
         }
-      } catch (err: any) {
-        results[table] = { count: 0, error: err?.message || 'Error desconocido' };
+      } catch (err: unknown) {
+        results[table] = { count: 0, error: (err as Error)?.message || 'Error desconocido' };
       }
     }
 
