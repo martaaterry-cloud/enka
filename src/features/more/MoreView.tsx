@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import type { ThemeMode } from '../../context';
-import { useEnka } from '../../context';
+import { useEnka, useAuth } from '../../context';
 import type { IconName } from '../../components/ui/Icon';
 import { Icon } from '../../components/ui/Icon';
+import { enkaRepository } from '../../services/enka';
 
 type SectionId = 'menu' | 'lugares' | 'rutinas' | 'proyectos' | 'categorias' | 'ajustes';
 
@@ -16,7 +17,20 @@ interface SectionItem {
 
 export const MoreView: React.FC = () => {
   const { theme, setTheme, locations, categories, projects } = useEnka();
+  const { user, signOut } = useAuth();
   const [currentSection, setCurrentSection] = useState<SectionId>('menu');
+  const [diagnosticRunning, setDiagnosticRunning] = useState<boolean>(false);
+  const [diagnosticResults, setDiagnosticResults] = useState<Record<string, { count: number; error: string | null }> | null>(null);
+
+  const runDiagnostic = async () => {
+    setDiagnosticRunning(true);
+    try {
+      const results = await enkaRepository.verifyAllTablesAccess();
+      setDiagnosticResults(results);
+    } finally {
+      setDiagnosticRunning(false);
+    }
+  };
 
   const sections: SectionItem[] = [
     {
@@ -347,6 +361,115 @@ export const MoreView: React.FC = () => {
       {/* 5. AJUSTES */}
       {currentSection === 'ajustes' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Cuenta y Sesión */}
+          <div style={{ padding: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon name="User" size={18} color="var(--text-primary)" />
+                <h3 style={{ fontSize: '0.9375rem', fontWeight: 700 }}>Cuenta y Sesión</h3>
+              </div>
+              <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                Conectado
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.8125rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Email:</span>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{user?.email || '—'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>User ID:</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                  {user?.id ? `${user.id.slice(0, 8)}...${user.id.slice(-4)}` : '—'}
+                </span>
+              </div>
+            </div>
+
+            {/* Diagnostic Button */}
+            <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
+              <button
+                type="button"
+                onClick={runDiagnostic}
+                disabled={diagnosticRunning}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--bg-surface-subtle)',
+                  border: '1px solid var(--border-default)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: diagnosticRunning ? 'wait' : 'pointer',
+                }}
+              >
+                <Icon name={diagnosticRunning ? 'Loader2' : 'Database'} size={14} className={diagnosticRunning ? 'animate-spin' : ''} />
+                <span>{diagnosticRunning ? 'Comprobando 11 tablas ENKA...' : 'Comprobar acceso RLS a Supabase'}</span>
+              </button>
+
+              {diagnosticResults && (
+                <div
+                  style={{
+                    marginTop: '10px',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--bg-surface-subtle)',
+                    border: '1px solid var(--border-subtle)',
+                    fontSize: '0.75rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                  }}
+                >
+                  <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }}>
+                    Estado de las 11 tablas ENKA:
+                  </div>
+                  {Object.entries(diagnosticResults).map(([table, res]) => (
+                    <div key={table} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>{table}</span>
+                      {res.error ? (
+                        <span style={{ color: '#EF4444', fontWeight: 600 }}>Error: {res.error}</span>
+                      ) : (
+                        <span style={{ color: '#10B981', fontWeight: 600 }}>OK ({res.count} filas)</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Sign out button */}
+            <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
+              <button
+                type="button"
+                onClick={() => signOut()}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  color: '#EF4444',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                }}
+              >
+                <Icon name="LogOut" size={14} color="#EF4444" />
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
+
           <div style={{ padding: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}>
             <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, marginBottom: '6px' }}>Tema de la Aplicación</h3>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
@@ -384,7 +507,7 @@ export const MoreView: React.FC = () => {
               ENKA está diseñado para ayudarte a organizar tu tiempo con honestidad temporal, reconociendo traslados y disponibilidad real.
             </p>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>
-              Versión 0.2.0 · Modo local
+              Versión 0.2.0 · Conexión Supabase activa
             </div>
           </div>
         </div>
