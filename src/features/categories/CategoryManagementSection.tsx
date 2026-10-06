@@ -67,13 +67,13 @@ export const CategoryManagementSection: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      {/* Toast */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Toast Notification */}
       {toastMessage && (
         <div
           className="animate-fade-in"
           style={{
-            padding: '10px 14px',
+            padding: '9px 12px',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--text-primary)',
             color: 'var(--text-inverse)',
@@ -85,82 +85,86 @@ export const CategoryManagementSection: React.FC = () => {
             boxShadow: 'var(--shadow-md)',
           }}
         >
-          <Icon name="CheckCircle" size={16} />
-          <span>{toastMessage}</span>
+          <Icon name="CheckCircle" size={15} />
+          <span style={{ minWidth: 0 }} className="truncate">{toastMessage}</span>
         </div>
       )}
 
-      {/* Header bar */}
+      {/* Header Bar */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
+          gap: '10px',
         }}
       >
-        <div>
-          <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+        <div style={{ minWidth: 0 }}>
+          <h2 style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'var(--text-primary)' }}>
             Categorías personales
           </h2>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Gestionadas en tu cuenta privada de Supabase.
+            Configuración y etiquetas de color.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenCreate}
-          style={{
-            padding: '8px 14px',
-            borderRadius: 'var(--radius-sm)',
-            backgroundColor: 'var(--text-primary)',
-            color: 'var(--text-inverse)',
-            fontSize: '0.8125rem',
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            cursor: 'pointer',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          <Icon name="Plus" size={16} />
-          <span>Nueva categoría</span>
-        </button>
+        {/* Show add button ONLY if there are categories (avoids duplicate CTA on empty state) */}
+        {!isLoading && !error && categories.length > 0 && (
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 'var(--radius-sm)',
+              backgroundColor: 'var(--text-primary)',
+              color: 'var(--text-inverse)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            <Icon name="Plus" size={14} />
+            <span>Nueva</span>
+          </button>
+        )}
       </div>
 
       {/* Error state */}
       {error && (
         <div
           style={{
-            padding: '12px 14px',
+            padding: '10px 12px',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
             border: '1px solid rgba(239, 68, 68, 0.25)',
             color: '#EF4444',
-            fontSize: '0.8125rem',
+            fontSize: '0.78125rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '10px',
+            gap: '8px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Icon name="AlertCircle" size={16} color="#EF4444" />
-            <span>Error al cargar categorías: {error}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+            <Icon name="AlertCircle" size={15} color="#EF4444" />
+            <span className="truncate">{error}</span>
           </div>
           <button
             type="button"
             onClick={() => void reloadCategories()}
             style={{
-              padding: '4px 8px',
+              padding: '3px 8px',
               borderRadius: 'var(--radius-xs)',
               backgroundColor: 'rgba(239, 68, 68, 0.2)',
               color: '#EF4444',
-              fontSize: '0.75rem',
+              fontSize: '0.6875rem',
               fontWeight: 600,
               cursor: 'pointer',
+              flexShrink: 0,
             }}
           >
             Reintentar
@@ -172,44 +176,44 @@ export const CategoryManagementSection: React.FC = () => {
       {isLoading && (
         <div
           style={{
-            padding: '32px 16px',
+            padding: '28px 16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px',
+            gap: '8px',
             backgroundColor: 'var(--bg-surface)',
-            borderRadius: 'var(--radius-lg)',
+            borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-subtle)',
           }}
         >
-          <Icon name="Loader2" size={24} className="animate-spin" color="var(--text-muted)" />
-          <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-            Cargando tus categorías desde Supabase...
+          <Icon name="Loader2" size={20} className="animate-spin" color="var(--text-muted)" />
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            Cargando categorías...
           </span>
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Single Clear CTA Empty State */}
       {!isLoading && !error && categories.length === 0 && (
         <div
           style={{
-            padding: '36px 20px',
+            padding: '28px 16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
-            gap: '12px',
+            gap: '10px',
             backgroundColor: 'var(--bg-surface)',
             border: '1px dashed var(--border-default)',
-            borderRadius: 'var(--radius-xl)',
+            borderRadius: 'var(--radius-lg)',
           }}
         >
           <div
             style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: 'var(--radius-lg)',
+              width: '38px',
+              height: '38px',
+              borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--bg-surface-subtle)',
               color: 'var(--text-muted)',
               display: 'flex',
@@ -217,22 +221,22 @@ export const CategoryManagementSection: React.FC = () => {
               justifyContent: 'center',
             }}
           >
-            <Icon name="Palette" size={22} />
+            <Icon name="Palette" size={18} />
           </div>
           <div>
-            <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              No tienes categorías todavía
+            <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+              Sin categorías todavía
             </h3>
             <p
               style={{
-                fontSize: '0.8125rem',
+                fontSize: '0.75rem',
                 color: 'var(--text-muted)',
-                marginTop: '4px',
-                maxWidth: '280px',
-                lineHeight: 1.4,
+                marginTop: '2px',
+                maxWidth: '260px',
+                lineHeight: 1.35,
               }}
             >
-              Crea tus propias categorías para organizar visualmente tus actividades según tu vida real.
+              Crea categorías para organizar visualmente tus actividades.
             </p>
           </div>
           <button
@@ -240,49 +244,49 @@ export const CategoryManagementSection: React.FC = () => {
             onClick={handleOpenCreate}
             style={{
               marginTop: '4px',
-              padding: '9px 18px',
+              padding: '8px 16px',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--text-primary)',
               color: 'var(--text-inverse)',
-              fontSize: '0.8125rem',
+              fontSize: '0.78125rem',
               fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '5px',
               cursor: 'pointer',
             }}
           >
-            <Icon name="Plus" size={16} />
+            <Icon name="Plus" size={14} />
             <span>Crear primera categoría</span>
           </button>
         </div>
       )}
 
-      {/* Category List */}
+      {/* Compact Categories List */}
       {!isLoading && !error && categories.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {categories.map((cat) => (
             <div
               key={cat.id}
               style={{
-                padding: '12px 14px',
+                padding: '10px 12px',
                 backgroundColor: 'var(--bg-surface)',
                 border: '1px solid var(--border-default)',
-                borderRadius: 'var(--radius-lg)',
+                borderRadius: 'var(--radius-md)',
                 boxShadow: 'var(--shadow-sm)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: '12px',
+                gap: '10px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                 <div
                   style={{
-                    width: '38px',
-                    height: '38px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: `${cat.color}20`,
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: `${cat.color}18`,
                     color: cat.color,
                     display: 'flex',
                     alignItems: 'center',
@@ -290,18 +294,16 @@ export const CategoryManagementSection: React.FC = () => {
                     flexShrink: 0,
                   }}
                 >
-                  <Icon name={cat.icon_name || 'Tag'} size={20} color={cat.color} />
+                  <Icon name={cat.icon_name || 'Tag'} size={16} color={cat.color} />
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: '0.9375rem',
+                      fontSize: '0.875rem',
                       fontWeight: 700,
                       color: 'var(--text-primary)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
                     }}
+                    className="truncate"
                   >
                     {cat.name}
                   </div>
@@ -309,48 +311,48 @@ export const CategoryManagementSection: React.FC = () => {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
-                      fontSize: '0.75rem',
+                      gap: '5px',
+                      fontSize: '0.6875rem',
                       color: 'var(--text-muted)',
-                      marginTop: '2px',
+                      marginTop: '1px',
                     }}
                   >
                     <span
                       style={{
                         display: 'inline-block',
-                        width: '8px',
-                        height: '8px',
+                        width: '6px',
+                        height: '6px',
                         borderRadius: '50%',
                         backgroundColor: cat.color,
+                        flexShrink: 0,
                       }}
                     />
-                    <span>{cat.color}</span>
-                    {cat.sort_order > 0 && <span>· Orden: {cat.sort_order}</span>}
+                    <span className="truncate">{cat.color}</span>
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
                 <button
                   type="button"
                   onClick={() => handleOpenEdit(cat)}
                   style={{
-                    padding: '7px 10px',
-                    borderRadius: 'var(--radius-sm)',
+                    padding: '5px 8px',
+                    borderRadius: 'var(--radius-xs)',
                     backgroundColor: 'var(--bg-surface-subtle)',
                     border: '1px solid var(--border-subtle)',
                     color: 'var(--text-secondary)',
-                    fontSize: '0.75rem',
+                    fontSize: '0.6875rem',
                     fontWeight: 600,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
+                    gap: '3px',
                     cursor: 'pointer',
                   }}
                   aria-label={`Editar categoría ${cat.name}`}
                 >
-                  <Icon name="Pencil" size={14} />
+                  <Icon name="Pencil" size={12} />
                   <span>Editar</span>
                 </button>
 
@@ -358,20 +360,19 @@ export const CategoryManagementSection: React.FC = () => {
                   type="button"
                   onClick={() => setDeletingCategoryId(cat.id)}
                   style={{
-                    padding: '7px 9px',
-                    borderRadius: 'var(--radius-sm)',
+                    padding: '5px 7px',
+                    borderRadius: 'var(--radius-xs)',
                     backgroundColor: 'rgba(239, 68, 68, 0.08)',
                     border: '1px solid rgba(239, 68, 68, 0.2)',
                     color: '#EF4444',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
+                    fontSize: '0.6875rem',
                     display: 'flex',
                     alignItems: 'center',
                     cursor: 'pointer',
                   }}
                   aria-label={`Eliminar categoría ${cat.name}`}
                 >
-                  <Icon name="Trash2" size={14} color="#EF4444" />
+                  <Icon name="Trash2" size={12} color="#EF4444" />
                 </button>
               </div>
             </div>
@@ -391,8 +392,8 @@ export const CategoryManagementSection: React.FC = () => {
       <ConfirmDialog
         isOpen={Boolean(deletingCategoryId)}
         title="¿Eliminar categoría?"
-        message="Esta categoría se eliminará de tu cuenta. Las actividades que la utilizaban no se borrarán, pero quedarán sin categoría asignada."
-        confirmLabel="Eliminar categoría"
+        message="Esta categoría se eliminará de tu cuenta. Las actividades existentes se mantendrán pero quedarán sin categoría."
+        confirmLabel="Eliminar"
         cancelLabel="Cancelar"
         isDestructive={true}
         isLoading={isDeleting}

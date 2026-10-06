@@ -23,15 +23,18 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
     <div
       style={{
         display: 'flex',
-        gap: '10px',
+        gap: '8px',
         position: 'relative',
-        paddingBottom: isLast ? '0' : '14px'
+        paddingBottom: isLast ? '0' : '10px',
+        minWidth: 0,
+        width: '100%'
       }}
     >
       {/* Time Column */}
       <div
         style={{
-          width: '50px',
+          width: '44px',
+          minWidth: '44px',
           flexShrink: 0,
           textAlign: 'right',
           paddingTop: '2px'
@@ -42,10 +45,10 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
             <div
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: '0.8125rem',
+                fontSize: '0.78125rem',
                 fontWeight: 700,
                 color: 'var(--text-primary)',
-                lineHeight: 1.2
+                lineHeight: 1.15
               }}
             >
               {activity.startTime}
@@ -54,7 +57,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
               <div
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '0.6875rem',
+                  fontSize: '0.65625rem',
                   color: 'var(--text-dim)',
                   marginTop: '1px'
                 }}
@@ -64,19 +67,19 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
             ) : activity.isEndTimeUnknown ? (
               <div
                 style={{
-                  fontSize: '0.625rem',
+                  fontSize: '0.59375rem',
                   color: 'var(--text-dim)',
                   marginTop: '1px',
                   fontStyle: 'italic'
                 }}
               >
-                Fin s/fijar
+                Flexible
               </div>
             ) : null}
           </>
         ) : (
-          <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            {activity.isAllDay ? 'Día compl.' : 'Pendiente'}
+          <span style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+            {activity.isAllDay ? 'Todo el día' : 'Pendiente'}
           </span>
         )}
       </div>
@@ -88,25 +91,27 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
           flexDirection: 'column',
           alignItems: 'center',
           flexShrink: 0,
-          position: 'relative'
+          position: 'relative',
+          width: '18px'
         }}
       >
         <div
           style={{
-            width: '20px',
-            height: '20px',
+            width: '18px',
+            height: '18px',
             borderRadius: 'var(--radius-full)',
             backgroundColor: category?.bgColor || 'var(--bg-surface-subtle)',
             border: `2px solid ${category?.color || 'var(--border-default)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 2
+            zIndex: 2,
+            marginTop: '1px'
           }}
         >
           <Icon
             name={category?.iconName || 'CircleDot'}
-            size={10}
+            size={9}
             color={category?.color || 'var(--text-primary)'}
           />
         </div>
@@ -115,7 +120,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
           <div
             style={{
               position: 'absolute',
-              top: '20px',
+              top: '19px',
               bottom: '-2px',
               width: '2px',
               backgroundColor: 'var(--border-subtle)',
@@ -130,10 +135,11 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
         onClick={() => openDetailModal(activity)}
         style={{
           flex: 1,
+          minWidth: 0,
           backgroundColor: 'var(--bg-surface)',
           border: '1px solid var(--border-default)',
           borderRadius: 'var(--radius-md)',
-          padding: '10px 12px',
+          padding: '8px 10px',
           boxShadow: 'var(--shadow-sm)',
           cursor: 'pointer',
           transition: 'var(--transition-fast)'
@@ -145,33 +151,31 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '8px'
+            gap: '6px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, flex: 1 }}>
             <h4
               style={{
-                fontSize: '0.875rem',
+                fontSize: '0.8125rem',
                 fontWeight: 700,
                 color: 'var(--text-primary)',
                 lineHeight: 1.25,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
                 textDecoration: activity.isCancelled ? 'line-through' : 'none',
                 opacity: activity.isCancelled ? 0.6 : 1
               }}
+              className="truncate"
             >
               {activity.title}
             </h4>
             {activity.isCancelled && (
               <span
                 style={{
-                  fontSize: '0.625rem',
+                  fontSize: '0.59375rem',
                   fontWeight: 700,
                   color: '#EF4444',
                   backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                  padding: '1px 5px',
+                  padding: '1px 4px',
                   borderRadius: 'var(--radius-xs)',
                   flexShrink: 0
                 }}
@@ -182,21 +186,22 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
             {category && (
               <span
                 style={{
-                  fontSize: '0.625rem',
+                  fontSize: '0.59375rem',
                   fontWeight: 600,
                   color: category.color,
                   backgroundColor: category.bgColor,
-                  padding: '1px 5px',
+                  padding: '1px 4px',
                   borderRadius: 'var(--radius-xs)',
                   flexShrink: 0
                 }}
+                className="truncate"
               >
                 {category.name}
               </span>
             )}
           </div>
 
-          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '3px' }}>
             {activity.certainty !== 'confirmed' && (
               <CertaintyIndicator
                 certainty={activity.certainty}
@@ -204,7 +209,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
                 size="sm"
               />
             )}
-            <Icon name="ChevronRight" size={14} color="var(--text-muted)" />
+            <Icon name="ChevronRight" size={13} color="var(--text-muted)" />
           </div>
         </div>
 
@@ -214,16 +219,16 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
-            gap: '10px',
-            marginTop: '4px',
-            fontSize: '0.71875rem',
+            gap: '8px',
+            marginTop: '3px',
+            fontSize: '0.6875rem',
             color: 'var(--text-secondary)'
           }}
         >
           {activity.locationName && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <Icon name="MapPin" size={11} color="var(--text-dim)" />
-              <span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', minWidth: 0 }}>
+              <Icon name="MapPin" size={10} color="var(--text-dim)" />
+              <span className="truncate">
                 {activity.locationName}
                 {activity.locationCity && ` (${activity.locationCity})`}
               </span>
@@ -235,13 +240,13 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '3px',
+                gap: '2px',
                 color: '#EF4444',
                 fontWeight: 600
               }}
             >
-              <Icon name="Timer" size={11} />
-              <span>1h antes en pabellón</span>
+              <Icon name="Timer" size={10} />
+              <span>1h antes</span>
             </div>
           )}
         </div>
@@ -250,12 +255,12 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
         {activity.isSportMatch && (
           <div
             style={{
-              marginTop: '6px',
-              padding: '4px 8px',
+              marginTop: '4px',
+              padding: '3px 6px',
               borderRadius: 'var(--radius-xs)',
               backgroundColor: 'rgba(239, 68, 68, 0.08)',
               border: '1px solid rgba(239, 68, 68, 0.2)',
-              fontSize: '0.71875rem',
+              fontSize: '0.6875rem',
               color: '#B91C1C'
             }}
           >
@@ -271,22 +276,22 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
           />
         )}
 
-        {/* Secondary Notes & Pattern if present */}
+        {/* Secondary Notes if present */}
         {(activity.notes || activity.recurrencePattern) && (
           <div
             style={{
-              marginTop: '6px',
-              paddingTop: '6px',
+              marginTop: '4px',
+              paddingTop: '4px',
               borderTop: '1px solid var(--border-subtle)',
-              fontSize: '0.71875rem',
+              fontSize: '0.6875rem',
               color: 'var(--text-muted)'
             }}
           >
-            {activity.notes && <p style={{ lineHeight: 1.35, margin: 0 }}>{activity.notes}</p>}
+            {activity.notes && <p style={{ lineHeight: 1.3, margin: 0 }} className="break-words">{activity.notes}</p>}
             {activity.recurrencePattern && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: activity.notes ? '4px' : 0, color: 'var(--text-dim)' }}>
-                <Icon name="Repeat" size={11} />
-                <span>{activity.recurrencePattern}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: activity.notes ? '2px' : 0, color: 'var(--text-dim)' }}>
+                <Icon name="Repeat" size={10} />
+                <span className="truncate">{activity.recurrencePattern}</span>
               </div>
             )}
           </div>

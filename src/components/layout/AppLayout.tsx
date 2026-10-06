@@ -21,12 +21,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     <div
       style={{
         minHeight: '100dvh',
+        width: '100%',
+        maxWidth: '100%',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'var(--bg-canvas)'
+        backgroundColor: 'var(--bg-canvas)',
+        overflowX: 'hidden'
       }}
     >
-      <div style={{ display: 'flex', flex: 1, width: '100%' }}>
+      <div style={{ display: 'flex', flex: 1, width: '100%', minWidth: 0 }}>
         {/* Desktop Sidebar */}
         <div className="desktop-sidebar-container">
           <DesktopSidebar />
@@ -39,6 +42,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             display: 'flex',
             flexDirection: 'column',
             minWidth: 0,
+            width: '100%',
+            maxWidth: '100%',
             paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 16px)'
           }}
           className="main-viewport-container"
@@ -58,7 +63,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               borderBottom: '1px solid var(--border-subtle)',
               position: 'sticky',
               top: 0,
-              zIndex: 40
+              zIndex: 40,
+              width: '100%',
+              maxWidth: '100%',
+              boxSizing: 'border-box'
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -109,12 +117,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
           {/* Body Content */}
           <main
+            className="main-content-wrapper"
             style={{
               flex: 1,
               width: '100%',
               maxWidth: 'var(--max-content-width)',
               margin: '0 auto',
-              padding: '16px 16px 32px 16px'
+              minWidth: 0,
+              boxSizing: 'border-box'
             }}
           >
             {children}
@@ -128,6 +138,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </div>
 
       <style>{`
+        .main-content-wrapper {
+          padding: 12px 12px 28px 12px;
+        }
+        @media (min-width: 480px) {
+          .main-content-wrapper {
+            padding: 16px 16px 32px 16px;
+          }
+        }
         @media (max-width: 839px) {
           .desktop-sidebar-container {
             display: none !important;

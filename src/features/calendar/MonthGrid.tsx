@@ -5,8 +5,8 @@ import { formatLocalDateToISO, parseLocalDate } from '../../utils/dateUtils';
 
 interface MonthGridProps {
   currentYear: number;
-  currentMonth: number; // 0-indexed (8 = September, 9 = October)
-  selectedDate: string; // YYYY-MM-DD
+  currentMonth: number;
+  selectedDate: string;
   onSelectDate: (date: string) => void;
   activities: Activity[];
   categories: Category[];
@@ -90,12 +90,15 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
 
   return (
     <div
+      className="month-grid-card"
       style={{
         backgroundColor: 'var(--bg-surface)',
         border: '1px solid var(--border-default)',
         borderRadius: 'var(--radius-lg)',
-        padding: '16px',
-        boxShadow: 'var(--shadow-sm)'
+        boxShadow: 'var(--shadow-sm)',
+        width: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box'
       }}
     >
       <div
@@ -103,17 +106,17 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
           textAlign: 'center',
-          marginBottom: '8px'
+          marginBottom: '6px'
         }}
       >
         {weekDays.map((d, i) => (
           <div
             key={i}
             style={{
-              fontSize: '0.75rem',
+              fontSize: '0.6875rem',
               fontWeight: 700,
               color: i >= 5 ? 'var(--text-muted)' : 'var(--text-secondary)',
-              padding: '6px 0'
+              padding: '4px 0'
             }}
           >
             {d}
@@ -125,7 +128,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: '4px'
+          gap: '3px'
         }}
       >
         {calendarCells.map(cell => {
@@ -138,6 +141,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
           return (
             <button
               key={cell.dateStr}
+              type="button"
               onClick={() => onSelectDate(cell.dateStr)}
               style={{
                 aspectRatio: '1',
@@ -154,18 +158,21 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '6px 2px',
+                padding: '4px 1px',
                 opacity: cell.isCurrentMonth ? 1 : 0.35,
                 transition: 'var(--transition-fast)',
                 cursor: 'pointer',
-                position: 'relative'
+                position: 'relative',
+                minWidth: 0,
               }}
+              aria-label={`Día ${cell.dayNumber}`}
             >
               <span
                 style={{
-                  fontSize: '0.8125rem',
+                  fontSize: '0.75rem',
                   fontWeight: isSelected ? 800 : cell.isCurrentMonth ? 600 : 400,
-                  color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)'
+                  color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  lineHeight: 1
                 }}
               >
                 {cell.dayNumber}
@@ -176,9 +183,10 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '3px',
-                  minHeight: '6px',
-                  width: '100%'
+                  gap: '2px',
+                  minHeight: '4px',
+                  width: '100%',
+                  overflow: 'hidden'
                 }}
               >
                 {dayActs.slice(0, 3).map((act, idx) => {
@@ -187,10 +195,11 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                     <div
                       key={idx}
                       style={{
-                        width: '5px',
-                        height: '5px',
+                        width: '4px',
+                        height: '4px',
                         borderRadius: '50%',
-                        backgroundColor: cat?.color || 'var(--text-muted)'
+                        backgroundColor: cat?.color || 'var(--text-muted)',
+                        flexShrink: 0
                       }}
                       title={act.title}
                     />
@@ -204,8 +213,8 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                     position: 'absolute',
                     top: '2px',
                     right: '2px',
-                    width: '4px',
-                    height: '4px',
+                    width: '3px',
+                    height: '3px',
                     borderRadius: '50%',
                     backgroundColor: '#EF4444'
                   }}
@@ -217,7 +226,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                   style={{
                     position: 'absolute',
                     bottom: '1px',
-                    width: '12px',
+                    width: '8px',
                     height: '2px',
                     backgroundColor: 'var(--status-pending)',
                     borderRadius: '999px'
@@ -228,6 +237,17 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
           );
         })}
       </div>
+
+      <style>{`
+        .month-grid-card {
+          padding: 10px 8px;
+        }
+        @media (min-width: 480px) {
+          .month-grid-card {
+            padding: 16px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

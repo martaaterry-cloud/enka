@@ -13,7 +13,6 @@ interface TimelineListProps {
 
 function parseTimeToMinutes(timeStr?: string): number | null {
   if (!timeStr) return null;
-  // Clean estimates like "~15:45" or "~15:40–15:45" -> "15:45"
   const cleaned = timeStr.replace(/[~]/g, '').trim();
   const firstPart = cleaned.includes('–') ? cleaned.split('–')[1] : cleaned.includes('-') ? cleaned.split('-')[1] : cleaned;
   const match = firstPart.match(/(\d{1,2}):(\d{2})/);
@@ -22,10 +21,10 @@ function parseTimeToMinutes(timeStr?: string): number | null {
 }
 
 function formatGapDuration(minutes: number): string {
-  if (minutes < 60) return `~${minutes} min disponible`;
+  if (minutes < 60) return `~${minutes} min libre`;
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return m > 0 ? `~${h} h ${m} min disponible` : `~${h} h disponible`;
+  return m > 0 ? `~${h}h ${m}m libre` : `~${h}h libre`;
 }
 
 export const TimelineList: React.FC<TimelineListProps> = ({
@@ -52,47 +51,49 @@ export const TimelineList: React.FC<TimelineListProps> = ({
       <div
         style={{
           textAlign: 'center',
-          padding: '32px 16px',
+          padding: '28px 16px',
           backgroundColor: 'var(--bg-surface)',
           borderRadius: 'var(--radius-lg)',
-          border: '1px dashed var(--border-default)'
+          border: '1px dashed var(--border-default)',
+          minWidth: 0,
         }}
       >
         <div
           style={{
-            width: '40px',
-            height: '40px',
+            width: '36px',
+            height: '36px',
             borderRadius: 'var(--radius-full)',
             backgroundColor: 'var(--bg-surface-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 10px auto'
+            margin: '0 auto 8px auto'
           }}
         >
-          <Icon name="CalendarCheck" size={18} color="var(--text-muted)" />
+          <Icon name="CalendarCheck" size={16} color="var(--text-muted)" />
         </div>
-        <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+        <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
           Sin actividades programadas
         </h4>
-        <p style={{ fontSize: '0.78125rem', color: 'var(--text-muted)', margin: '2px auto 12px auto' }}>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px auto 10px auto' }}>
           Día completamente libre.
         </p>
         <button
+          type="button"
           onClick={() => onOpenCreate()}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '5px',
-            padding: '7px 14px',
+            gap: '4px',
+            padding: '6px 12px',
             borderRadius: 'var(--radius-sm)',
             backgroundColor: 'var(--text-primary)',
             color: 'var(--text-inverse)',
-            fontSize: '0.78125rem',
+            fontSize: '0.75rem',
             fontWeight: 600
           }}
         >
-          <Icon name="Plus" size={13} />
+          <Icon name="Plus" size={12} />
           <span>Añadir actividad</span>
         </button>
       </div>
@@ -100,7 +101,7 @@ export const TimelineList: React.FC<TimelineListProps> = ({
   }
 
   return (
-    <div style={{ position: 'relative', marginTop: '10px' }}>
+    <div style={{ position: 'relative', marginTop: '6px', minWidth: 0 }}>
       {sortedActivities.map((act, idx) => {
         const cat = categoryMap.get(act.categoryId);
         const nextAct = sortedActivities[idx + 1];
@@ -135,25 +136,27 @@ export const TimelineList: React.FC<TimelineListProps> = ({
               isLast={isLast && !hasEveningFree}
             />
 
-            {/* Commute return with realistic estimated departure & arrival margins */}
+            {/* Commute return */}
             {act.returnTravelTransition && (
               <div
                 style={{
-                  margin: '0 0 6px 60px',
+                  margin: '0 0 4px 52px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  fontSize: '0.71875rem',
+                  gap: '5px',
+                  fontSize: '0.6875rem',
                   color: 'var(--travel-text)',
                   backgroundColor: 'var(--travel-bg)',
-                  padding: '4px 10px',
+                  padding: '3px 8px',
                   borderRadius: 'var(--radius-xs)',
-                  width: 'fit-content'
+                  width: 'fit-content',
+                  maxWidth: 'calc(100% - 52px)',
+                  minWidth: 0
                 }}
               >
-                <Icon name="Car" size={11} color="var(--text-muted)" />
-                <span>
-                  Regreso a {act.returnTravelTransition.toLocation || 'Bullas'} · Salida {act.returnTravelTransition.departureEstimate} · Llegada {act.returnTravelTransition.arrivalEstimate}
+                <Icon name="Car" size={10} color="var(--text-muted)" />
+                <span className="truncate">
+                  Regreso a {act.returnTravelTransition.toLocation || 'Bullas'} ({act.returnTravelTransition.departureEstimate}–{act.returnTravelTransition.arrivalEstimate})
                 </span>
               </div>
             )}
@@ -161,7 +164,7 @@ export const TimelineList: React.FC<TimelineListProps> = ({
             {/* Intermediate Gap */}
             {hasIntermediateGap && (
               <TimeGapIndicator
-                approximateStart={act.returnTravelTransition ? `Aprox. desde ${act.returnTravelTransition.arrivalEstimate}` : act.endTime ? `Desde ${act.endTime}` : undefined}
+                approximateStart={act.returnTravelTransition ? `~${act.returnTravelTransition.arrivalEstimate}` : act.endTime ? `${act.endTime}` : undefined}
                 approximateEnd={nextAct?.startTime}
                 durationDescription={formatGapDuration(gapDurationMinutes)}
                 locationCity={act.returnTravelTransition?.toLocation || act.locationCity || 'Bullas'}
@@ -169,12 +172,12 @@ export const TimelineList: React.FC<TimelineListProps> = ({
               />
             )}
 
-            {/* Free evening after last activity */}
+            {/* Free evening */}
             {hasEveningFree && (
               <TimeGapIndicator
                 durationDescription={
                   act.isEndTimeUnknown
-                    ? `Tarde/noche libre (según salida de ${act.title.toLowerCase()})`
+                    ? `Tarde libre tras ${act.title.toLowerCase()}`
                     : 'Tarde/noche libre'
                 }
                 locationCity={act.returnTravelTransition?.toLocation || act.locationCity || 'Bullas'}

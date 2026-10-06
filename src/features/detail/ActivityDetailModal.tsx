@@ -339,71 +339,77 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '8px',
-                marginTop: '8px'
+                gap: '6px',
+                marginTop: '6px'
               }}
             >
               <button
+                type="button"
                 onClick={() => setMode('edit')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px',
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-md)',
+                  gap: '4px',
+                  padding: '8px 6px',
+                  borderRadius: 'var(--radius-sm)',
                   backgroundColor: 'var(--text-primary)',
                   color: 'var(--text-inverse)',
-                  fontSize: '0.8125rem',
+                  fontSize: '0.75rem',
                   fontWeight: 700,
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  minWidth: 0,
                 }}
               >
-                <Icon name="Edit3" size={14} />
-                <span>Editar</span>
+                <Icon name="Edit3" size={13} />
+                <span className="truncate">Editar</span>
               </button>
 
               <button
+                type="button"
                 onClick={handleCancelClick}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px',
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-md)',
+                  gap: '4px',
+                  padding: '8px 6px',
+                  borderRadius: 'var(--radius-sm)',
                   backgroundColor: activity.isCancelled ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.08)',
                   color: activity.isCancelled ? '#10B981' : '#EF4444',
                   border: activity.isCancelled ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.2)',
-                  fontSize: '0.8125rem',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  minWidth: 0,
                 }}
               >
-                <Icon name={activity.isCancelled ? 'CheckCircle2' : 'XCircle'} size={14} />
-                <span>{activity.isCancelled ? 'Reanudar' : 'Cancelar'}</span>
+                <Icon name={activity.isCancelled ? 'CheckCircle2' : 'XCircle'} size={13} />
+                <span className="truncate">{activity.isCancelled ? 'Reanudar' : 'Cancelar'}</span>
               </button>
 
               <button
+                type="button"
                 onClick={handleDeleteClick}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px',
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-md)',
+                  gap: '4px',
+                  padding: '8px 6px',
+                  borderRadius: 'var(--radius-sm)',
                   backgroundColor: 'var(--bg-surface-subtle)',
                   color: '#EF4444',
                   border: '1px solid var(--border-subtle)',
-                  fontSize: '0.8125rem',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  minWidth: 0,
                 }}
               >
-                <Icon name="Trash2" size={14} color="#EF4444" />
-                <span>Eliminar</span>
+                <Icon name="Trash2" size={13} color="#EF4444" />
+                <span className="truncate">Eliminar</span>
               </button>
             </div>
           </div>
@@ -437,11 +443,11 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             </div>
 
             {/* Category picker */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Categoría
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(95px, 1fr))', gap: '6px' }}>
                 {categories.map((cat: Category) => {
                   const isSelected = categoryId === cat.id;
                   return (
@@ -452,19 +458,20 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        padding: '8px 10px',
+                        gap: '5px',
+                        padding: '6px 8px',
                         borderRadius: 'var(--radius-sm)',
                         border: isSelected ? `2px solid ${cat.color}` : '1px solid var(--border-subtle)',
                         backgroundColor: isSelected ? cat.bgColor : 'var(--bg-surface-subtle)',
                         color: isSelected ? cat.color : 'var(--text-secondary)',
-                        fontSize: '0.75rem',
+                        fontSize: '0.71875rem',
                         fontWeight: isSelected ? 700 : 500,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        minWidth: 0,
                       }}
                     >
-                      <Icon name={cat.iconName} size={14} color={cat.color} />
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <Icon name={cat.iconName} size={13} color={cat.color} />
+                      <span className="truncate">
                         {cat.name}
                       </span>
                     </button>
@@ -630,13 +637,14 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
               </div>
 
               {!selectedLocationId && (
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '6px', marginTop: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
                   <input
                     type="text"
                     placeholder="Lugar (ej: Pabellón, Peluquería...)"
                     value={customLocationName}
                     onChange={(e) => setCustomLocationName(e.target.value)}
                     style={{
+                      width: '100%',
                       padding: '8px 10px',
                       borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--border-default)',
@@ -651,6 +659,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                     value={customLocationCity}
                     onChange={(e) => setCustomLocationCity(e.target.value)}
                     style={{
+                      width: '100%',
                       padding: '8px 10px',
                       borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--border-default)',

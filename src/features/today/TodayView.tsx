@@ -47,29 +47,22 @@ export const TodayView: React.FC = () => {
     return getRelativeTimeText(nextActivity?.startTime);
   }, [nextActivity]);
 
-  const daySummaryText = React.useMemo(() => {
-    if (todayActivities.length === 0) return 'Día completamente libre';
-    const hasUncertain = todayActivities.some(a => a.certainty !== 'confirmed' || a.isEndTimeUnknown);
-    if (hasUncertain) return 'Horarios con margen';
-    return 'Día planificado';
-  }, [todayActivities]);
-
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header */}
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      {/* Compact Clean Header */}
       <div
         style={{
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '12px'
+          gap: '10px',
+          flexWrap: 'wrap'
         }}
       >
-        <div>
+        <div style={{ minWidth: 0 }}>
           <span
             style={{
-              fontSize: '0.8125rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: 'var(--text-muted)',
               textTransform: 'uppercase',
@@ -80,54 +73,47 @@ export const TodayView: React.FC = () => {
           </span>
           <h1
             style={{
-              fontSize: '1.625rem',
+              fontSize: '1.375rem',
               fontWeight: 800,
               color: 'var(--text-primary)',
-              letterSpacing: '-0.03em',
-              marginTop: '2px'
+              letterSpacing: '-0.02em',
+              lineHeight: 1.2,
+              marginTop: '1px'
             }}
+            className="truncate"
           >
             {todayHeader}
           </h1>
         </div>
 
-        {/* Quick Day Metrics */}
+        {/* Discrete context badge */}
         <div
           style={{
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '12px',
+            gap: '6px',
             backgroundColor: 'var(--bg-surface)',
             border: '1px solid var(--border-default)',
-            padding: '6px 14px',
-            borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-sm)'
+            padding: '4px 10px',
+            borderRadius: 'var(--radius-full)',
+            fontSize: '0.6875rem',
+            fontWeight: 600,
+            color: 'var(--text-secondary)',
+            boxShadow: 'var(--shadow-sm)',
+            flexShrink: 0
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--status-confirmed)' }} />
-            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              {todayActivities.length} {todayActivities.length === 1 ? 'actividad' : 'actividades'}
-            </span>
-          </div>
-          <div style={{ width: '1px', height: '14px', backgroundColor: 'var(--border-default)' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Icon name="Hourglass" size={13} color="var(--status-confirmed)" />
-            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              {daySummaryText}
-            </span>
-          </div>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--status-confirmed)' }} />
+          <span>{todayActivities.length} {todayActivities.length === 1 ? 'actividad' : 'actividades'}</span>
         </div>
       </div>
 
-      {/* Siguiente Actividad */}
-      <div>
-        <NextUpCard
-          activity={nextActivity}
-          category={nextActivityCategory}
-          relativeTimeText={relativeTimeText}
-        />
-      </div>
+      {/* Siguiente Actividad (Focus card) */}
+      <NextUpCard
+        activity={nextActivity}
+        category={nextActivityCategory}
+        relativeTimeText={relativeTimeText}
+      />
 
       {/* Category Filter Pills */}
       <div
@@ -136,22 +122,27 @@ export const TodayView: React.FC = () => {
           alignItems: 'center',
           gap: '6px',
           overflowX: 'auto',
-          paddingBottom: '4px',
+          paddingBottom: '2px',
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+          width: '100%',
+          minWidth: 0
         }}
       >
         <button
+          type="button"
           onClick={() => setSelectedCategoryFilter(null)}
           style={{
             padding: '4px 10px',
             borderRadius: 'var(--radius-full)',
-            fontSize: '0.75rem',
+            fontSize: '0.6875rem',
             fontWeight: selectedCategoryFilter === null ? 700 : 500,
-            backgroundColor: selectedCategoryFilter === null ? 'var(--text-primary)' : 'var(--bg-surface-subtle)',
+            backgroundColor: selectedCategoryFilter === null ? 'var(--text-primary)' : 'var(--bg-surface)',
             color: selectedCategoryFilter === null ? 'var(--text-inverse)' : 'var(--text-secondary)',
-            border: selectedCategoryFilter === null ? '1px solid var(--text-primary)' : '1px solid var(--border-subtle)',
+            border: selectedCategoryFilter === null ? '1px solid var(--text-primary)' : '1px solid var(--border-default)',
             whiteSpace: 'nowrap',
+            flexShrink: 0,
             transition: 'var(--transition-fast)'
           }}
         >
@@ -161,24 +152,26 @@ export const TodayView: React.FC = () => {
           const isSelected = selectedCategoryFilter === cat.id;
           return (
             <button
+              type="button"
               key={cat.id}
               onClick={() => setSelectedCategoryFilter(isSelected ? null : cat.id)}
               style={{
                 padding: '4px 10px',
                 borderRadius: 'var(--radius-full)',
-                fontSize: '0.75rem',
+                fontSize: '0.6875rem',
                 fontWeight: isSelected ? 700 : 500,
-                backgroundColor: isSelected ? cat.color : 'var(--bg-surface-subtle)',
+                backgroundColor: isSelected ? cat.color : 'var(--bg-surface)',
                 color: isSelected ? '#ffffff' : 'var(--text-secondary)',
-                border: isSelected ? `1px solid ${cat.color}` : '1px solid var(--border-subtle)',
+                border: isSelected ? `1px solid ${cat.color}` : '1px solid var(--border-default)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '4px',
                 whiteSpace: 'nowrap',
+                flexShrink: 0,
                 transition: 'var(--transition-fast)'
               }}
             >
-              <Icon name={cat.iconName} size={12} color={isSelected ? '#ffffff' : cat.color} />
+              <Icon name={cat.iconName} size={11} color={isSelected ? '#ffffff' : cat.color} />
               <span>{cat.name}</span>
             </button>
           );
@@ -186,12 +179,12 @@ export const TodayView: React.FC = () => {
       </div>
 
       {/* Main Day Timeline */}
-      <div>
+      <div style={{ marginTop: '2px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            Cronología del día
+          <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            Cronología de hoy
           </h2>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
             Base: Bullas
           </span>
         </div>

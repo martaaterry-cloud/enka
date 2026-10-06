@@ -5,7 +5,7 @@ import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
 
 interface WeekGridProps {
-  selectedDate: string; // YYYY-MM-DD
+  selectedDate: string;
   onSelectDate: (date: string) => void;
   activities: Activity[];
   categories: Category[];
@@ -51,18 +51,19 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
   }, [selectedDate]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: 0, width: '100%' }}>
       {/* Mobile Week Strip (Lun - Dom in 7 equal columns, no overflow) */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: '4px',
+          gap: '3px',
           backgroundColor: 'var(--bg-surface)',
-          padding: '8px 6px',
-          borderRadius: 'var(--radius-lg)',
+          padding: '6px 4px',
+          borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-default)',
-          boxShadow: 'var(--shadow-sm)'
+          boxShadow: 'var(--shadow-sm)',
+          minWidth: 0,
         }}
       >
         {weekDays.map(item => {
@@ -72,24 +73,26 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
           return (
             <button
               key={item.dateStr}
+              type="button"
               onClick={() => onSelectDate(item.dateStr)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '2px',
-                padding: '6px 2px',
-                borderRadius: 'var(--radius-sm)',
+                padding: '5px 1px',
+                borderRadius: 'var(--radius-xs)',
                 backgroundColor: isSelected ? 'var(--text-primary)' : 'transparent',
                 color: isSelected ? 'var(--text-inverse)' : 'var(--text-primary)',
                 border: 'none',
                 cursor: 'pointer',
-                transition: 'var(--transition-fast)'
+                transition: 'var(--transition-fast)',
+                minWidth: 0,
               }}
             >
               <span
                 style={{
-                  fontSize: '0.6875rem',
+                  fontSize: '0.625rem',
                   fontWeight: 600,
                   color: isSelected ? 'rgba(255, 255, 255, 0.8)' : 'var(--text-muted)'
                 }}
@@ -98,7 +101,7 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
               </span>
               <span
                 style={{
-                  fontSize: '0.9375rem',
+                  fontSize: '0.875rem',
                   fontWeight: 800,
                   lineHeight: 1.1
                 }}
@@ -107,15 +110,15 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
               </span>
 
               {/* Dots indicator */}
-              <div style={{ display: 'flex', gap: '2px', minHeight: '5px', marginTop: '2px' }}>
+              <div style={{ display: 'flex', gap: '2px', minHeight: '4px', marginTop: '1px' }}>
                 {dayActivities.slice(0, 3).map((act) => {
                   const cat = categoryMap.get(act.categoryId);
                   return (
                     <span
                       key={act.id}
                       style={{
-                        width: '4px',
-                        height: '4px',
+                        width: '3px',
+                        height: '3px',
                         borderRadius: '50%',
                         backgroundColor: isSelected ? '#ffffff' : (cat?.color || 'var(--text-muted)')
                       }}
@@ -128,14 +131,14 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
         })}
       </div>
 
-      {/* Week Day Agenda Summary (Vertical, natural mobile scrolling) */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+      {/* Week Day Agenda Summary */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px' }}>
+          <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Resumen semanal
           </span>
-          <span style={{ fontSize: '0.6875rem', color: 'var(--text-dim)' }}>
-            Toca un día arriba para ver su detalle
+          <span style={{ fontSize: '0.625rem', color: 'var(--text-dim)' }}>
+            Toca un día para seleccionarlo
           </span>
         </div>
 
@@ -148,38 +151,39 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
               key={item.dateStr}
               onClick={() => onSelectDate(item.dateStr)}
               style={{
-                padding: '10px 12px',
+                padding: '8px 10px',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: isSelected ? 'var(--bg-surface)' : 'var(--bg-surface-subtle)',
                 border: isSelected ? '1.5px solid var(--text-primary)' : '1px solid var(--border-subtle)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: '10px',
+                gap: '8px',
                 cursor: 'pointer',
-                transition: 'var(--transition-fast)'
+                transition: 'var(--transition-fast)',
+                minWidth: 0
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                 <div
                   style={{
-                    width: '32px',
+                    width: '28px',
                     textAlign: 'center',
                     flexShrink: 0
                   }}
                 >
-                  <div style={{ fontSize: '0.625rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '0.59375rem', fontWeight: 600, color: 'var(--text-muted)' }}>
                     {item.dayName}
                   </div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  <div style={{ fontSize: '0.8125rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                     {item.dayNumber}
                   </div>
                 </div>
 
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   {dayActs.length === 0 ? (
-                    <span style={{ fontSize: '0.75rem', color: 'var(--status-confirmed)', fontStyle: 'italic' }}>
-                      Día libre sin compromisos
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--status-confirmed)', fontStyle: 'italic' }}>
+                      Libre
                     </span>
                   ) : (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
@@ -193,16 +197,17 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
                               openDetailModal(act);
                             }}
                             style={{
-                              fontSize: '0.6875rem',
-                              padding: '2px 6px',
+                              fontSize: '0.625rem',
+                              padding: '2px 5px',
                               borderRadius: 'var(--radius-xs)',
                               backgroundColor: act.isCancelled ? 'rgba(239, 68, 68, 0.1)' : (cat?.bgColor || 'var(--bg-surface)'),
                               color: act.isCancelled ? '#EF4444' : (cat?.color || 'var(--text-primary)'),
                               fontWeight: 600,
-                              whiteSpace: 'nowrap',
                               textDecoration: act.isCancelled ? 'line-through' : 'none',
-                              cursor: 'pointer'
+                              cursor: 'pointer',
+                              maxWidth: '100%',
                             }}
+                            className="truncate"
                           >
                             {act.title}
                           </span>
@@ -213,7 +218,7 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
                 </div>
               </div>
 
-              <Icon name="ChevronRight" size={14} color="var(--text-dim)" />
+              <Icon name="ChevronRight" size={13} color="var(--text-dim)" />
             </div>
           );
         })}

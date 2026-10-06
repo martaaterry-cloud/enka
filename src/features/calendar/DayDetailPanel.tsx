@@ -8,7 +8,7 @@ import { OverlapCallout } from '../../components/ui/OverlapCallout';
 import { formatSpanishDateHeader } from '../../utils/dateUtils';
 
 interface DayDetailPanelProps {
-  date: string; // YYYY-MM-DD
+  date: string;
   activities: Activity[];
   categories: Category[];
   onOpenCreate: () => void;
@@ -35,60 +35,65 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
         backgroundColor: 'var(--bg-surface)',
         border: '1px solid var(--border-default)',
         borderRadius: 'var(--radius-lg)',
-        padding: '16px 20px',
+        padding: '12px 14px',
         boxShadow: 'var(--shadow-sm)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '14px'
+        gap: '12px',
+        minWidth: 0,
+        width: '100%'
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Detalle del día seleccionado
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+        <div style={{ minWidth: 0 }}>
+          <span style={{ fontSize: '0.625rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Día seleccionado
           </span>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, textTransform: 'capitalize', color: 'var(--text-primary)', marginTop: '2px' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, textTransform: 'capitalize', color: 'var(--text-primary)', marginTop: '1px' }} className="truncate">
             {formattedDate}
           </h3>
         </div>
 
         <button
+          type="button"
           onClick={onOpenCreate}
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '6px 12px',
-            borderRadius: 'var(--radius-sm)',
+            gap: '4px',
+            padding: '5px 10px',
+            borderRadius: 'var(--radius-xs)',
             backgroundColor: 'var(--text-primary)',
             color: 'var(--text-inverse)',
-            fontSize: '0.75rem',
-            fontWeight: 600
+            fontSize: '0.71875rem',
+            fontWeight: 600,
+            flexShrink: 0
           }}
         >
-          <Icon name="Plus" size={13} />
+          <Icon name="Plus" size={12} />
           <span>Añadir</span>
         </button>
       </div>
 
-      {/* Activities list for selected day */}
+      {/* Activities list */}
       {activities.length === 0 ? (
         <div
           style={{
-            padding: '24px 16px',
+            padding: '20px 14px',
             textAlign: 'center',
             backgroundColor: 'var(--bg-surface-subtle)',
             borderRadius: 'var(--radius-md)',
-            border: '1px dashed var(--border-subtle)'
+            border: '1px dashed var(--border-subtle)',
+            minWidth: 0
           }}
         >
-          <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-            No hay actividades programadas. Día completamente libre.
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            Sin actividades programadas. Día libre.
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
           {activities.map(act => {
             const cat = categoryMap.get(act.categoryId);
             return (
@@ -96,61 +101,64 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
                 key={act.id}
                 onClick={() => openDetailModal(act)}
                 style={{
-                  padding: '12px 14px',
+                  padding: '10px 12px',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--bg-surface-subtle)',
                   border: '1px solid var(--border-subtle)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '6px',
+                  gap: '5px',
                   cursor: 'pointer',
-                  transition: 'var(--transition-fast)'
+                  transition: 'var(--transition-fast)',
+                  minWidth: 0
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, flex: 1 }}>
                     <h4
                       style={{
-                        fontSize: '0.875rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         color: 'var(--text-primary)',
                         textDecoration: act.isCancelled ? 'line-through' : 'none',
                         opacity: act.isCancelled ? 0.6 : 1
                       }}
+                      className="truncate"
                     >
                       {act.title}
                     </h4>
                     {act.isCancelled && (
                       <span
                         style={{
-                          fontSize: '0.625rem',
+                          fontSize: '0.59375rem',
                           fontWeight: 700,
                           color: '#EF4444',
                           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                          padding: '1px 5px',
-                          borderRadius: 'var(--radius-xs)'
+                          padding: '1px 4px',
+                          borderRadius: 'var(--radius-xs)',
+                          flexShrink: 0
                         }}
                       >
                         Cancelada
                       </span>
                     )}
                     {cat && (
-                      <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: cat.color }}>
+                      <span style={{ fontSize: '0.625rem', fontWeight: 600, color: cat.color }} className="truncate">
                         {cat.name}
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
                     <CertaintyIndicator certainty={act.certainty} customNote={act.certaintyNote} size="sm" />
-                    <Icon name="ChevronRight" size={14} color="var(--text-muted)" />
+                    <Icon name="ChevronRight" size={13} color="var(--text-muted)" />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
                   {act.startTime && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontFamily: 'var(--font-mono)' }}>
-                      <Icon name="Clock" size={12} color="var(--text-dim)" />
-                      <span>{act.startTime} {act.endTime ? `– ${act.endTime}` : ''}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontFamily: 'var(--font-mono)' }}>
+                      <Icon name="Clock" size={11} color="var(--text-dim)" />
+                      <span>{act.startTime}{act.endTime ? ` – ${act.endTime}` : ''}</span>
                     </div>
                   )}
 
@@ -161,16 +169,16 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
                   )}
 
                   {act.locationName && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Icon name="MapPin" size={12} color="var(--text-dim)" />
-                      <span>{act.locationName} ({act.locationCity})</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', minWidth: 0 }}>
+                      <Icon name="MapPin" size={11} color="var(--text-dim)" />
+                      <span className="truncate">{act.locationName}{act.locationCity ? ` (${act.locationCity})` : ''}</span>
                     </div>
                   )}
                 </div>
 
                 {act.isSportMatch && (
-                  <div style={{ fontSize: '0.75rem', color: '#B91C1C', backgroundColor: 'rgba(239, 68, 68, 0.08)', padding: '4px 8px', borderRadius: 'var(--radius-xs)', marginTop: '4px' }}>
-                    <strong>{act.isHomeMatch ? 'Partido LOCAL en Pabellón Juan Valera (Bullas)' : 'Partido VISITANTE'}</strong> vs {act.opponent}. Convocatoria 1h antes.
+                  <div style={{ fontSize: '0.6875rem', color: '#B91C1C', backgroundColor: 'rgba(239, 68, 68, 0.08)', padding: '3px 6px', borderRadius: 'var(--radius-xs)', marginTop: '2px' }}>
+                    <strong>{act.isHomeMatch ? 'Partido en Bullas' : 'Partido fuera'}</strong> vs {act.opponent}.
                   </div>
                 )}
 
@@ -179,7 +187,7 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
                 )}
 
                 {act.notes && (
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', margin: 0 }} className="break-words">
                     {act.notes}
                   </p>
                 )}

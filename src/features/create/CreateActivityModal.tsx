@@ -14,7 +14,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
   const { addActivity, categories, locations } = useEnka();
 
   const [title, setTitle] = useState('');
-  const [categoryId, setCategoryId] = useState('trabajo');
+  const [categoryId, setCategoryId] = useState(categories[0]?.id || 'trabajo');
   const [date, setDate] = useState(initialDate || getTodayDateString());
   const [isAllDay, setIsAllDay] = useState(false);
   const [isTimePending, setIsTimePending] = useState(false);
@@ -58,21 +58,21 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
   ];
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {/* Title Input */}
-      <div>
-        <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
           Título de la actividad *
         </label>
         <input
           type="text"
           required
-          placeholder="Ej. Entrenamiento, Tutoría TFG, Dentista..."
+          placeholder="Ej: Entrenamiento, Tutoría TFG, Dentista..."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           style={{
             width: '100%',
-            padding: '10px 12px',
+            padding: '9px 12px',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-default)',
             backgroundColor: 'var(--bg-surface-subtle)',
@@ -84,11 +84,11 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
       </div>
 
       {/* Category Selector */}
-      <div>
-        <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
           Categoría
         </label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))', gap: '6px' }}>
           {categories.map(cat => {
             const isSelected = categoryId === cat.id;
             return (
@@ -99,19 +99,20 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 10px',
+                  gap: '5px',
+                  padding: '7px 8px',
                   borderRadius: 'var(--radius-sm)',
                   backgroundColor: isSelected ? cat.bgColor : 'var(--bg-surface-subtle)',
                   border: isSelected ? `1.5px solid ${cat.color}` : '1px solid var(--border-subtle)',
                   color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
                   fontWeight: isSelected ? 700 : 500,
-                  fontSize: '0.75rem',
-                  textAlign: 'left'
+                  fontSize: '0.71875rem',
+                  textAlign: 'left',
+                  minWidth: 0,
                 }}
               >
-                <Icon name={cat.iconName} size={14} color={cat.color} />
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <Icon name={cat.iconName} size={13} color={cat.color} />
+                <span className="truncate">
                   {cat.name}
                 </span>
               </button>
@@ -121,9 +122,9 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
       </div>
 
       {/* Date and Time Switches */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
             Fecha
           </label>
           <input
@@ -137,14 +138,15 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
               border: '1px solid var(--border-default)',
               backgroundColor: 'var(--bg-surface-subtle)',
               color: 'var(--text-primary)',
-              fontFamily: 'var(--font-mono)'
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.875rem'
             }}
           />
         </div>
 
         {/* Flexible Toggles */}
-        <div style={{ display: 'flex', gap: '16px', marginTop: '2px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8125rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginTop: '2px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78125rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>
             <input
               type="checkbox"
               checked={isAllDay}
@@ -152,11 +154,12 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
                 setIsAllDay(e.target.checked);
                 if (e.target.checked) setIsTimePending(false);
               }}
+              style={{ accentColor: 'var(--text-primary)' }}
             />
             <span>Todo el día</span>
           </label>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8125rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78125rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>
             <input
               type="checkbox"
               checked={isTimePending}
@@ -167,17 +170,18 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
                   setCertainty('pending_time');
                 }
               }}
+              style={{ accentColor: 'var(--text-primary)' }}
             />
             <span>Hora por concretar</span>
           </label>
         </div>
 
-        {/* Time pickers if not all-day/pending */}
+        {/* Time pickers */}
         {!isAllDay && !isTimePending && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '4px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                Hora inicio
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '2px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <label style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                Inicio
               </label>
               <input
                 type="time"
@@ -185,19 +189,20 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
                 onChange={(e) => setStartTime(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '8px 10px',
+                  padding: '7px 8px',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border-default)',
                   backgroundColor: 'var(--bg-surface-subtle)',
                   color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-mono)'
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.8125rem'
                 }}
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                Hora fin
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <label style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                Fin
               </label>
               <input
                 type="time"
@@ -205,12 +210,13 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
                 onChange={(e) => setEndTime(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '8px 10px',
+                  padding: '7px 8px',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border-default)',
                   backgroundColor: 'var(--bg-surface-subtle)',
                   color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-mono)'
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.8125rem'
                 }}
               />
             </div>
@@ -219,8 +225,8 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
       </div>
 
       {/* Location Selector */}
-      <div>
-        <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
           Ubicación
         </label>
         <select
@@ -231,18 +237,18 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
           }}
           style={{
             width: '100%',
-            padding: '9px 12px',
+            padding: '8px 10px',
             borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--border-default)',
             backgroundColor: 'var(--bg-surface-subtle)',
             color: 'var(--text-primary)',
-            marginBottom: '6px'
+            fontSize: '0.8125rem'
           }}
         >
           <option value="">-- Seleccionar lugar habitual --</option>
           {locations.map(loc => (
             <option key={loc.id} value={loc.id}>
-              {loc.name} ({loc.city}) — ~{loc.defaultTravelFromHomeMinutes} min desde Bullas
+              {loc.name} ({loc.city})
             </option>
           ))}
         </select>
@@ -255,7 +261,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
             onChange={(e) => setCustomLocationName(e.target.value)}
             style={{
               width: '100%',
-              padding: '8px 12px',
+              padding: '8px 10px',
               borderRadius: 'var(--radius-sm)',
               border: '1px solid var(--border-default)',
               backgroundColor: 'var(--bg-surface-subtle)',
@@ -267,11 +273,11 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
       </div>
 
       {/* Certainty Level */}
-      <div>
-        <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-          Estado de Certeza
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+          Certeza
         </label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))', gap: '6px' }}>
           {certaintyOptions.map(opt => {
             const isSelected = certainty === opt.value;
             return (
@@ -282,18 +288,19 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 10px',
+                  gap: '5px',
+                  padding: '7px 8px',
                   borderRadius: 'var(--radius-sm)',
                   backgroundColor: isSelected ? 'var(--bg-surface-elevated)' : 'var(--bg-surface-subtle)',
                   border: isSelected ? '1.5px solid var(--text-primary)' : '1px solid var(--border-subtle)',
                   color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
                   fontWeight: isSelected ? 700 : 500,
-                  fontSize: '0.75rem'
+                  fontSize: '0.71875rem',
+                  minWidth: 0,
                 }}
               >
-                <Icon name={opt.icon} size={13} />
-                <span>{opt.label}</span>
+                <Icon name={opt.icon} size={12} />
+                <span className="truncate">{opt.label}</span>
               </button>
             );
           })}
@@ -301,18 +308,18 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
       </div>
 
       {/* Notes */}
-      <div>
-        <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-          Notas / Logística
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+          Notas
         </label>
         <textarea
           rows={2}
-          placeholder="Preparación previa, margen, avisos o detalles..."
+          placeholder="Preparación previa, margen o detalles..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           style={{
             width: '100%',
-            padding: '8px 12px',
+            padding: '8px 10px',
             borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--border-default)',
             backgroundColor: 'var(--bg-surface-subtle)',
@@ -324,19 +331,19 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
       </div>
 
       {/* Submit Actions */}
-      <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginTop: '6px', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
         <button
           type="button"
           onClick={onClose}
           style={{
             flex: 1,
-            padding: '10px',
-            borderRadius: 'var(--radius-md)',
+            padding: '9px',
+            borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--border-default)',
             backgroundColor: 'var(--bg-surface-subtle)',
             color: 'var(--text-secondary)',
             fontWeight: 600,
-            fontSize: '0.875rem'
+            fontSize: '0.8125rem'
           }}
         >
           Cancelar
@@ -345,13 +352,13 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
           type="submit"
           style={{
             flex: 2,
-            padding: '10px',
-            borderRadius: 'var(--radius-md)',
+            padding: '9px',
+            borderRadius: 'var(--radius-sm)',
             border: 'none',
             backgroundColor: 'var(--text-primary)',
             color: 'var(--text-inverse)',
             fontWeight: 700,
-            fontSize: '0.875rem',
+            fontSize: '0.8125rem',
             boxShadow: 'var(--shadow-sm)'
           }}
         >
@@ -373,6 +380,8 @@ export const CreateActivityModal: React.FC = () => {
       onClose={closeCreateModal}
       title="Nueva Actividad"
       subtitle="Organiza tu tiempo con flexibilidad y contexto real."
+      icon="Plus"
+      maxWidth="480px"
     >
       <ActivityForm initialDate={selectedDate} onClose={closeCreateModal} />
     </ModalSheet>

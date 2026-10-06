@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import type { IconName } from './Icon';
 import { Icon } from './Icon';
 
 interface ModalSheetProps {
@@ -6,7 +7,10 @@ interface ModalSheetProps {
   onClose: () => void;
   title: string;
   subtitle?: string;
+  icon?: IconName;
+  iconColor?: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
   maxWidth?: string;
 }
 
@@ -15,18 +19,20 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
   onClose,
   title,
   subtitle,
+  icon,
+  iconColor,
   children,
-  maxWidth = '540px'
+  footer,
+  maxWidth = '520px'
 }) => {
   useEffect(() => {
     if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -35,18 +41,7 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
-        animation: 'fadeIn 180ms ease-out'
-      }}
+      className="modal-backdrop"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -54,93 +49,213 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
       }}
     >
       <div
-        style={{
-          width: '100%',
-          maxWidth,
-          maxHeight: '90dvh',
-          backgroundColor: 'var(--bg-surface)',
-          borderTopLeftRadius: 'var(--radius-xl)',
-          borderTopRightRadius: 'var(--radius-xl)',
-          border: '1px solid var(--border-default)',
-          boxShadow: 'var(--shadow-sheet)',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          animation: 'slideUp 220ms cubic-bezier(0.16, 1, 0.3, 1)',
-          paddingBottom: 'calc(16px + var(--safe-bottom))'
-        }}
+        className="modal-container"
+        style={{ maxWidth }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drag handle for mobile */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            paddingTop: '10px',
-            paddingBottom: '4px'
-          }}
-        >
-          <div
-            style={{
-              width: '36px',
-              height: '4px',
-              backgroundColor: 'var(--border-strong)',
-              borderRadius: '999px',
-              opacity: 0.6
-            }}
-          />
+        {/* Mobile Drag Indicator */}
+        <div className="modal-drag-handle">
+          <div className="modal-drag-bar" />
         </div>
 
         {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '12px 20px',
-            borderBottom: '1px solid var(--border-subtle)'
-          }}
-        >
-          <div>
-            <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {title}
-            </h2>
-            {subtitle && (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                {subtitle}
-              </p>
+        <div className="modal-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            {icon && (
+              <div
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: iconColor ? `${iconColor}18` : 'var(--bg-surface-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: iconColor || 'var(--text-primary)',
+                  flexShrink: 0
+                }}
+              >
+                <Icon name={icon} size={18} color={iconColor} />
+              </div>
             )}
+            <div style={{ minWidth: 0 }}>
+              <h2 className="modal-title">
+                {title}
+              </h2>
+              {subtitle && (
+                <p className="modal-subtitle">
+                  {subtitle}
+                </p>
+              )}
+            </div>
           </div>
+
           <button
+            type="button"
             onClick={onClose}
             aria-label="Cerrar modal"
-            style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: 'var(--bg-surface-subtle)',
-              color: 'var(--text-secondary)',
-              transition: 'var(--transition-fast)'
-            }}
+            className="modal-close-btn"
           >
             <Icon name="X" size={18} />
           </button>
         </div>
 
-        {/* Content */}
-        <div
-          style={{
-            padding: '16px 20px',
-            overflowY: 'auto',
-            flex: 1
-          }}
-        >
+        {/* Scrollable Content Body */}
+        <div className="modal-body">
           {children}
         </div>
+
+        {/* Optional Sticky/Bottom Footer */}
+        {footer && (
+          <div className="modal-footer">
+            {footer}
+          </div>
+        )}
       </div>
+
+      <style>{`
+        .modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 1000;
+          display: flex;
+          align-items: flex-end;
+          justifyContent: center;
+          background-color: rgba(0, 0, 0, 0.65);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          animation: fadeIn 160ms ease-out forwards;
+          padding: 0;
+          overflow: hidden;
+        }
+
+        .modal-container {
+          width: 100%;
+          max-height: 90dvh;
+          background-color: var(--bg-surface);
+          border-top-left-radius: var(--radius-xl);
+          border-top-right-radius: var(--radius-xl);
+          border: 1px solid var(--border-default);
+          border-bottom: none;
+          box-shadow: var(--shadow-sheet);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          animation: slideUp 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          padding-bottom: var(--safe-bottom);
+        }
+
+        .modal-drag-handle {
+          display: flex;
+          justify-content: center;
+          padding-top: 8px;
+          padding-bottom: 2px;
+          flex-shrink: 0;
+        }
+
+        .modal-drag-bar {
+          width: 36px;
+          height: 4px;
+          background-color: var(--border-strong);
+          border-radius: 999px;
+          opacity: 0.5;
+        }
+
+        .modal-header {
+          display: flex;
+          align-items: center;
+          justifyContent: space-between;
+          padding: 10px 16px 12px 16px;
+          border-bottom: 1px solid var(--border-subtle);
+          flex-shrink: 0;
+          gap: 10px;
+        }
+
+        .modal-title {
+          font-size: 1.0625rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          line-height: 1.25;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .modal-subtitle {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          margin-top: 2px;
+          line-height: 1.3;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .modal-close-btn {
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justifyContent: center;
+          border-radius: var(--radius-full);
+          background-color: var(--bg-surface-subtle);
+          color: var(--text-secondary);
+          flex-shrink: 0;
+          transition: var(--transition-fast);
+        }
+
+        .modal-close-btn:hover {
+          color: var(--text-primary);
+          background-color: var(--bg-surface-hover);
+        }
+
+        .modal-body {
+          padding: 14px 16px;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          flex: 1;
+          min-width: 0;
+          overscroll-behavior: contain;
+        }
+
+        .modal-footer {
+          padding: 10px 16px;
+          border-top: 1px solid var(--border-subtle);
+          background-color: var(--bg-surface);
+          flex-shrink: 0;
+        }
+
+        @media (min-width: 640px) {
+          .modal-backdrop {
+            align-items: center;
+            padding: 24px;
+          }
+
+          .modal-container {
+            border-radius: var(--radius-xl);
+            border-bottom: 1px solid var(--border-default);
+            max-height: 85dvh;
+            animation: fadeIn 180ms ease-out forwards;
+            padding-bottom: 0;
+          }
+
+          .modal-drag-handle {
+            display: none;
+          }
+
+          .modal-header {
+            padding: 14px 20px;
+          }
+
+          .modal-body {
+            padding: 18px 20px;
+          }
+
+          .modal-footer {
+            padding: 12px 20px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

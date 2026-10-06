@@ -68,13 +68,13 @@ export const LocationManagementSection: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      {/* Toast */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Toast Notification */}
       {toastMessage && (
         <div
           className="animate-fade-in"
           style={{
-            padding: '10px 14px',
+            padding: '9px 12px',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--text-primary)',
             color: 'var(--text-inverse)',
@@ -86,82 +86,86 @@ export const LocationManagementSection: React.FC = () => {
             boxShadow: 'var(--shadow-md)',
           }}
         >
-          <Icon name="CheckCircle" size={16} />
-          <span>{toastMessage}</span>
+          <Icon name="CheckCircle" size={15} />
+          <span style={{ minWidth: 0 }} className="truncate">{toastMessage}</span>
         </div>
       )}
 
-      {/* Header bar */}
+      {/* Header Bar */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
+          gap: '10px',
         }}
       >
-        <div>
-          <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+        <div style={{ minWidth: 0 }}>
+          <h2 style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'var(--text-primary)' }}>
             Lugares y Logística
           </h2>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Tus ubicaciones reales guardadas en Supabase.
+            Tus ubicaciones de referencia guardadas.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenCreate}
-          style={{
-            padding: '8px 14px',
-            borderRadius: 'var(--radius-sm)',
-            backgroundColor: 'var(--text-primary)',
-            color: 'var(--text-inverse)',
-            fontSize: '0.8125rem',
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            cursor: 'pointer',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          <Icon name="Plus" size={16} />
-          <span>Nueva ubicación</span>
-        </button>
+        {/* Show add button ONLY if there are locations (avoids duplicate CTA on empty state) */}
+        {!isLoading && !error && locations.length > 0 && (
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 'var(--radius-sm)',
+              backgroundColor: 'var(--text-primary)',
+              color: 'var(--text-inverse)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            <Icon name="Plus" size={14} />
+            <span>Nueva</span>
+          </button>
+        )}
       </div>
 
       {/* Error state */}
       {error && (
         <div
           style={{
-            padding: '12px 14px',
+            padding: '10px 12px',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
             border: '1px solid rgba(239, 68, 68, 0.25)',
             color: '#EF4444',
-            fontSize: '0.8125rem',
+            fontSize: '0.78125rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '10px',
+            gap: '8px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Icon name="AlertCircle" size={16} color="#EF4444" />
-            <span>Error al cargar ubicaciones: {error}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+            <Icon name="AlertCircle" size={15} color="#EF4444" />
+            <span className="truncate">{error}</span>
           </div>
           <button
             type="button"
             onClick={() => void reloadLocations()}
             style={{
-              padding: '4px 8px',
+              padding: '3px 8px',
               borderRadius: 'var(--radius-xs)',
               backgroundColor: 'rgba(239, 68, 68, 0.2)',
               color: '#EF4444',
-              fontSize: '0.75rem',
+              fontSize: '0.6875rem',
               fontWeight: 600,
               cursor: 'pointer',
+              flexShrink: 0,
             }}
           >
             Reintentar
@@ -173,44 +177,44 @@ export const LocationManagementSection: React.FC = () => {
       {isLoading && (
         <div
           style={{
-            padding: '32px 16px',
+            padding: '28px 16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px',
+            gap: '8px',
             backgroundColor: 'var(--bg-surface)',
-            borderRadius: 'var(--radius-lg)',
+            borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-subtle)',
           }}
         >
-          <Icon name="Loader2" size={24} className="animate-spin" color="var(--text-muted)" />
-          <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-            Cargando tus ubicaciones desde Supabase...
+          <Icon name="Loader2" size={20} className="animate-spin" color="var(--text-muted)" />
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            Cargando ubicaciones...
           </span>
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Single Clear CTA Empty State */}
       {!isLoading && !error && locations.length === 0 && (
         <div
           style={{
-            padding: '36px 20px',
+            padding: '28px 16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
-            gap: '12px',
+            gap: '10px',
             backgroundColor: 'var(--bg-surface)',
             border: '1px dashed var(--border-default)',
-            borderRadius: 'var(--radius-xl)',
+            borderRadius: 'var(--radius-lg)',
           }}
         >
           <div
             style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: 'var(--radius-lg)',
+              width: '38px',
+              height: '38px',
+              borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--bg-surface-subtle)',
               color: 'var(--text-muted)',
               display: 'flex',
@@ -218,22 +222,22 @@ export const LocationManagementSection: React.FC = () => {
               justifyContent: 'center',
             }}
           >
-            <Icon name="MapPin" size={22} />
+            <Icon name="MapPin" size={18} />
           </div>
           <div>
-            <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              No tienes ubicaciones guardadas
+            <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+              Sin ubicaciones guardadas
             </h3>
             <p
               style={{
-                fontSize: '0.8125rem',
+                fontSize: '0.75rem',
                 color: 'var(--text-muted)',
-                marginTop: '4px',
-                maxWidth: '290px',
-                lineHeight: 1.4,
+                marginTop: '2px',
+                maxWidth: '260px',
+                lineHeight: 1.35,
               }}
             >
-              Guarda tus lugares de referencia para organizar tus actividades y calcular desplazamientos reales.
+              Guarda tus lugares clave para organizar traslados y actividades.
             </p>
           </div>
           <button
@@ -241,71 +245,70 @@ export const LocationManagementSection: React.FC = () => {
             onClick={handleOpenCreate}
             style={{
               marginTop: '4px',
-              padding: '9px 18px',
+              padding: '8px 16px',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--text-primary)',
               color: 'var(--text-inverse)',
-              fontSize: '0.8125rem',
+              fontSize: '0.78125rem',
               fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '5px',
               cursor: 'pointer',
             }}
           >
-            <Icon name="Plus" size={16} />
+            <Icon name="Plus" size={14} />
             <span>Añadir primera ubicación</span>
           </button>
         </div>
       )}
 
-      {/* Locations List */}
+      {/* Compact Locations List */}
       {!isLoading && !error && locations.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {locations.map((loc) => {
             const mapsUrl = defaultLocationProvider.getMapsUrl(loc);
+            const locationSummary = [loc.city, loc.region].filter(Boolean).join(', ');
 
             return (
               <div
                 key={loc.id}
                 style={{
-                  padding: '14px 16px',
+                  padding: '12px 14px',
                   backgroundColor: 'var(--bg-surface)',
                   border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-lg)',
+                  borderRadius: 'var(--radius-md)',
                   boxShadow: 'var(--shadow-sm)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px',
+                  gap: '6px',
                 }}
               >
-                {/* Top Row: Name & Badges */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                {/* Top Row: Name + Badges */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                    <Icon name="MapPin" size={16} color="var(--text-primary)" />
+                    <Icon name="MapPin" size={15} color="var(--text-primary)" />
                     <h3
                       style={{
-                        fontSize: '0.9375rem',
+                        fontSize: '0.875rem',
                         fontWeight: 700,
                         color: 'var(--text-primary)',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
                       }}
+                      className="truncate"
                     >
                       {loc.name}
                     </h3>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
                     {loc.is_home_base && (
                       <span
                         style={{
-                          fontSize: '0.6875rem',
+                          fontSize: '0.625rem',
                           fontWeight: 700,
                           color: '#10B981',
                           backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                          padding: '2px 7px',
+                          padding: '2px 6px',
                           borderRadius: 'var(--radius-xs)',
                         }}
                       >
@@ -315,62 +318,45 @@ export const LocationManagementSection: React.FC = () => {
                     {loc.is_private && (
                       <span
                         style={{
-                          fontSize: '0.6875rem',
+                          fontSize: '0.625rem',
                           fontWeight: 600,
                           color: 'var(--text-dim)',
                           backgroundColor: 'var(--bg-surface-subtle)',
-                          padding: '2px 6px',
+                          padding: '2px 5px',
                           borderRadius: 'var(--radius-xs)',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '3px',
+                          gap: '2px',
                         }}
                       >
-                        <Icon name="Lock" size={11} />
+                        <Icon name="Lock" size={10} />
                         <span>Privada</span>
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Details */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '0.8125rem' }}>
-                  {loc.address && !loc.is_private && (
-                    <div style={{ color: 'var(--text-secondary)' }}>{loc.address}</div>
-                  )}
-                  {loc.is_private && (
-                    <div style={{ color: 'var(--text-dim)', fontStyle: 'italic', fontSize: '0.75rem' }}>
-                      Dirección privada guardada
-                    </div>
-                  )}
-                  {(loc.city || loc.region) && (
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                      {[loc.city, loc.region, loc.country !== 'España' ? loc.country : null]
-                        .filter(Boolean)
-                        .join(', ')}
-                    </div>
-                  )}
-                  {loc.latitude != null && loc.longitude != null && (
-                    <div style={{ color: 'var(--text-dim)', fontSize: '0.6875rem', fontFamily: 'var(--font-mono)' }}>
-                      GPS: {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
-                    </div>
-                  )}
-                  {loc.notes && (
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '2px' }}>
-                      {loc.notes}
-                    </div>
-                  )}
+                {/* Address summary */}
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.3 }}>
+                  {loc.is_private ? (
+                    <span style={{ fontStyle: 'italic', color: 'var(--text-dim)' }}>Dirección privada guardada</span>
+                  ) : loc.address ? (
+                    <span className="truncate" style={{ display: 'block' }}>{loc.address}{locationSummary ? ` · ${locationSummary}` : ''}</span>
+                  ) : locationSummary ? (
+                    <span>{locationSummary}</span>
+                  ) : null}
                 </div>
 
-                {/* Actions row */}
+                {/* Bottom Row: Map Link + Actions */}
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    marginTop: '4px',
-                    paddingTop: '8px',
+                    gap: '8px',
+                    paddingTop: '6px',
                     borderTop: '1px solid var(--border-subtle)',
+                    marginTop: '2px',
                   }}
                 >
                   <a
@@ -378,7 +364,7 @@ export const LocationManagementSection: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      fontSize: '0.75rem',
+                      fontSize: '0.6875rem',
                       color: 'var(--text-secondary)',
                       display: 'flex',
                       alignItems: 'center',
@@ -386,30 +372,30 @@ export const LocationManagementSection: React.FC = () => {
                       textDecoration: 'none',
                     }}
                   >
-                    <Icon name="ExternalLink" size={13} />
-                    <span>Abrir en mapas</span>
+                    <Icon name="ExternalLink" size={12} />
+                    <span>Ver en mapas</span>
                   </a>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(loc)}
                       style={{
-                        padding: '5px 10px',
-                        borderRadius: 'var(--radius-sm)',
+                        padding: '4px 8px',
+                        borderRadius: 'var(--radius-xs)',
                         backgroundColor: 'var(--bg-surface-subtle)',
                         border: '1px solid var(--border-subtle)',
                         color: 'var(--text-secondary)',
-                        fontSize: '0.75rem',
+                        fontSize: '0.6875rem',
                         fontWeight: 600,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
+                        gap: '3px',
                         cursor: 'pointer',
                       }}
                       aria-label={`Editar ubicación ${loc.name}`}
                     >
-                      <Icon name="Pencil" size={13} />
+                      <Icon name="Pencil" size={11} />
                       <span>Editar</span>
                     </button>
 
@@ -417,20 +403,19 @@ export const LocationManagementSection: React.FC = () => {
                       type="button"
                       onClick={() => setDeletingLocationId(loc.id)}
                       style={{
-                        padding: '5px 8px',
-                        borderRadius: 'var(--radius-sm)',
+                        padding: '4px 6px',
+                        borderRadius: 'var(--radius-xs)',
                         backgroundColor: 'rgba(239, 68, 68, 0.08)',
                         border: '1px solid rgba(239, 68, 68, 0.2)',
                         color: '#EF4444',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
+                        fontSize: '0.6875rem',
                         display: 'flex',
                         alignItems: 'center',
                         cursor: 'pointer',
                       }}
                       aria-label={`Eliminar ubicación ${loc.name}`}
                     >
-                      <Icon name="Trash2" size={13} color="#EF4444" />
+                      <Icon name="Trash2" size={11} color="#EF4444" />
                     </button>
                   </div>
                 </div>
@@ -452,8 +437,8 @@ export const LocationManagementSection: React.FC = () => {
       <ConfirmDialog
         isOpen={Boolean(deletingLocationId)}
         title="¿Eliminar ubicación?"
-        message="Esta ubicación se eliminará de tu cuenta. Las actividades o recurrencias que la utilizaban no se borrarán, pero quedarán sin ubicación asignada."
-        confirmLabel="Eliminar ubicación"
+        message="Esta ubicación se eliminará de tu cuenta. Las actividades existentes se mantendrán sin perder datos."
+        confirmLabel="Eliminar"
         cancelLabel="Cancelar"
         isDestructive={true}
         isLoading={isDeleting}
