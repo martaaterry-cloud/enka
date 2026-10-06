@@ -23,7 +23,7 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
   iconColor,
   children,
   footer,
-  maxWidth = '520px'
+  maxWidth = '480px'
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -53,19 +53,14 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
         style={{ maxWidth }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Mobile Drag Indicator */}
-        <div className="modal-drag-handle">
-          <div className="modal-drag-bar" />
-        </div>
-
-        {/* Header */}
+        {/* Fixed Header */}
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
             {icon && (
               <div
                 style={{
-                  width: '34px',
-                  height: '34px',
+                  width: '32px',
+                  height: '32px',
                   borderRadius: 'var(--radius-sm)',
                   backgroundColor: iconColor ? `${iconColor}18` : 'var(--bg-surface-subtle)',
                   display: 'flex',
@@ -75,7 +70,7 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
                   flexShrink: 0
                 }}
               >
-                <Icon name={icon} size={18} color={iconColor} />
+                <Icon name={icon} size={16} color={iconColor} />
               </div>
             )}
             <div style={{ minWidth: 0 }}>
@@ -96,7 +91,7 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
             aria-label="Cerrar modal"
             className="modal-close-btn"
           >
-            <Icon name="X" size={18} />
+            <Icon name="X" size={16} />
           </button>
         </div>
 
@@ -105,7 +100,7 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
           {children}
         </div>
 
-        {/* Optional Sticky/Bottom Footer */}
+        {/* Optional Action Footer */}
         {footer && (
           <div className="modal-footer">
             {footer}
@@ -119,60 +114,54 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
           inset: 0;
           z-index: 1000;
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           justifyContent: center;
           background-color: rgba(0, 0, 0, 0.65);
           backdrop-filter: blur(4px);
           -webkit-backdrop-filter: blur(4px);
-          animation: fadeIn 160ms ease-out forwards;
-          padding: 0;
+          animation: fadeIn 150ms ease-out forwards;
+          padding: max(16px, env(safe-area-inset-top, 16px)) max(16px, env(safe-area-inset-right, 16px)) max(16px, env(safe-area-inset-bottom, 16px)) max(16px, env(safe-area-inset-left, 16px));
           overflow: hidden;
+          box-sizing: border-box;
         }
 
         .modal-container {
           width: 100%;
-          max-height: 90dvh;
+          max-height: min(88dvh, calc(100dvh - 32px));
           background-color: var(--bg-surface);
-          border-top-left-radius: var(--radius-xl);
-          border-top-right-radius: var(--radius-xl);
+          border-radius: var(--radius-xl);
           border: 1px solid var(--border-default);
-          border-bottom: none;
-          box-shadow: var(--shadow-sheet);
+          box-shadow: var(--shadow-lg);
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          animation: slideUp 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          padding-bottom: var(--safe-bottom);
+          animation: modalPopIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          margin: auto;
         }
 
-        .modal-drag-handle {
-          display: flex;
-          justify-content: center;
-          padding-top: 8px;
-          padding-bottom: 2px;
-          flex-shrink: 0;
-        }
-
-        .modal-drag-bar {
-          width: 36px;
-          height: 4px;
-          background-color: var(--border-strong);
-          border-radius: 999px;
-          opacity: 0.5;
+        @keyframes modalPopIn {
+          from {
+            opacity: 0;
+            transform: scale(0.96) translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
 
         .modal-header {
           display: flex;
           align-items: center;
           justifyContent: space-between;
-          padding: 10px 16px 12px 16px;
+          padding: 12px 16px;
           border-bottom: 1px solid var(--border-subtle);
           flex-shrink: 0;
           gap: 10px;
         }
 
         .modal-title {
-          font-size: 1.0625rem;
+          font-size: 1rem;
           font-weight: 700;
           color: var(--text-primary);
           line-height: 1.25;
@@ -182,18 +171,18 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
         }
 
         .modal-subtitle {
-          font-size: 0.75rem;
+          font-size: 0.71875rem;
           color: var(--text-muted);
-          margin-top: 2px;
-          line-height: 1.3;
+          margin-top: 1px;
+          line-height: 1.25;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
         .modal-close-btn {
-          width: 32px;
-          height: 32px;
+          width: 30px;
+          height: 30px;
           display: flex;
           align-items: center;
           justifyContent: center;
@@ -226,29 +215,12 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
         }
 
         @media (min-width: 640px) {
-          .modal-backdrop {
-            align-items: center;
-            padding: 24px;
-          }
-
-          .modal-container {
-            border-radius: var(--radius-xl);
-            border-bottom: 1px solid var(--border-default);
-            max-height: 85dvh;
-            animation: fadeIn 180ms ease-out forwards;
-            padding-bottom: 0;
-          }
-
-          .modal-drag-handle {
-            display: none;
-          }
-
           .modal-header {
             padding: 14px 20px;
           }
 
           .modal-body {
-            padding: 18px 20px;
+            padding: 16px 20px;
           }
 
           .modal-footer {

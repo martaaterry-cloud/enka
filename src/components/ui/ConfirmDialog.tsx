@@ -28,6 +28,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   return (
     <div
+      role="alertdialog"
+      aria-modal="true"
       style={{
         position: 'fixed',
         inset: 0,
@@ -38,7 +40,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '16px',
+        padding: 'max(16px, env(safe-area-inset-top, 16px)) max(16px, env(safe-area-inset-right, 16px)) max(16px, env(safe-area-inset-bottom, 16px)) max(16px, env(safe-area-inset-left, 16px))',
+        boxSizing: 'border-box',
+        overflow: 'hidden'
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget && !isLoading) onCancel();
@@ -48,22 +52,26 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         className="animate-fade-in"
         style={{
           width: '100%',
-          maxWidth: '380px',
+          maxWidth: '360px',
+          maxHeight: 'min(88dvh, calc(100dvh - 32px))',
           backgroundColor: 'var(--bg-surface)',
           border: '1px solid var(--border-default)',
-          borderRadius: 'var(--radius-lg)',
+          borderRadius: 'var(--radius-xl)',
           boxShadow: 'var(--shadow-lg)',
-          padding: '24px',
+          padding: '20px 18px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
+          gap: '14px',
+          margin: 'auto',
+          boxSizing: 'border-box'
         }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
           <div
             style={{
-              width: '38px',
-              height: '38px',
+              width: '36px',
+              height: '36px',
               borderRadius: 'var(--radius-md)',
               backgroundColor: isDestructive
                 ? 'rgba(239, 68, 68, 0.12)'
@@ -77,14 +85,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           >
             <Icon
               name={isDestructive ? 'AlertTriangle' : 'HelpCircle'}
-              size={20}
+              size={18}
               color={isDestructive ? '#EF4444' : undefined}
             />
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <h3
               style={{
-                fontSize: '1rem',
+                fontSize: '0.9375rem',
                 fontWeight: 700,
                 color: 'var(--text-primary)',
                 letterSpacing: '-0.01em',
@@ -94,10 +102,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             </h3>
             <p
               style={{
-                fontSize: '0.8125rem',
+                fontSize: '0.78125rem',
                 color: 'var(--text-secondary)',
                 marginTop: '4px',
-                lineHeight: 1.45,
+                lineHeight: 1.4,
               }}
             >
               {message}
@@ -110,7 +118,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             display: 'flex',
             gap: '8px',
             justifyContent: 'flex-end',
-            marginTop: '8px',
+            marginTop: '4px',
           }}
         >
           <button
@@ -118,7 +126,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             disabled={isLoading}
             onClick={onCancel}
             style={{
-              padding: '8px 14px',
+              flex: 1,
+              padding: '8px 12px',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--bg-surface-subtle)',
               border: '1px solid var(--border-default)',
@@ -135,20 +144,22 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             disabled={isLoading}
             onClick={onConfirm}
             style={{
-              padding: '8px 16px',
+              flex: 1,
+              padding: '8px 14px',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: isDestructive ? '#EF4444' : 'var(--text-primary)',
               color: '#ffffff',
               fontSize: '0.8125rem',
-              fontWeight: 600,
+              fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '6px',
               cursor: isLoading ? 'not-allowed' : 'pointer',
               opacity: isLoading ? 0.7 : 1,
             }}
           >
-            {isLoading && <Icon name="Loader2" size={14} className="animate-spin" />}
+            {isLoading && <Icon name="Loader2" size={13} className="animate-spin" />}
             <span>{confirmLabel}</span>
           </button>
         </div>
