@@ -1,14 +1,21 @@
+/// <reference types="vite-plugin-pwa/client" />
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { registerSW } from 'virtual:pwa-register';
 import App from './App';
 import './styles/global.css';
 
-// Auto register PWA service worker if supported
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // Offline fallback handling
-    });
+// The plugin resolves the worker URL relative to Vite's /enka/ base.
+// A root-relative /sw.js would point outside the GitHub Pages app.
+if (import.meta.env.PROD) {
+  registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      window.dispatchEvent(new Event('enka:pwa-update-available'));
+    },
+    onOfflineReady() {
+      window.dispatchEvent(new Event('enka:pwa-offline-ready'));
+    }
   });
 }
 
