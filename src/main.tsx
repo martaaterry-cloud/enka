@@ -8,15 +8,7 @@ import './styles/global.css';
 // The plugin resolves the worker URL relative to Vite's /enka/ base.
 // A root-relative /sw.js would point outside the GitHub Pages app.
 if (import.meta.env.PROD) {
-  registerSW({
-    immediate: true,
-    onNeedRefresh() {
-      window.dispatchEvent(new Event('enka:pwa-update-available'));
-    },
-    onOfflineReady() {
-      window.dispatchEvent(new Event('enka:pwa-offline-ready'));
-    }
-  });
+  registerSW({ immediate: true });
 }
 
 createRoot(document.getElementById('root')!).render(
