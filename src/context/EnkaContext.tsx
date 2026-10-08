@@ -96,11 +96,11 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLocations((locationResult.data ?? []).map(l => ({
           id: l.id,
           name: l.name,
-          address: l.address ?? '',
           city: l.city ?? '',
-          latitude: l.latitude ?? undefined,
-          longitude: l.longitude ?? undefined
-        } as LocationItem)));
+          defaultTravelFromHomeMinutes: 0,
+          isHomeBase: l.is_home_base,
+          notes: l.notes ?? undefined
+        }))));
       }
     };
     void load();
