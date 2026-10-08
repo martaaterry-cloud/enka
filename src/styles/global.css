@@ -17,15 +17,22 @@ html {
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
   height: 100%;
+  overflow: hidden;
 }
 
 body {
-  min-height: 100%;
-  min-height: 100svh;
+  height: 100%;
+  overflow: hidden;
   background-color: var(--bg-canvas);
   overflow-x: hidden;
   line-height: 1.5;
   -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Typography Helpers */
