@@ -20,7 +20,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div
       style={{
-        minHeight: '100svh',
+        height: '100dvh',
+        minHeight: 0,
         width: '100%',
         maxWidth: '100%',
         display: 'flex',
@@ -29,7 +30,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         overflowX: 'hidden'
       }}
     >
-      <div style={{ display: 'flex', flex: 1, width: '100%', minWidth: 0 }}>
+      <div style={{ display: 'flex', flex: 1, width: '100%', minWidth: 0, minHeight: 0 }}>
         {/* Desktop Sidebar */}
         <div className="desktop-sidebar-container">
           <DesktopSidebar />
@@ -44,7 +45,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             minWidth: 0,
             width: '100%',
             maxWidth: '100%',
-            paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 16px)'
+            minHeight: 0,
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
           }}
           className="main-viewport-container"
         >
@@ -133,7 +136,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="mobile-nav-container">
+      <div className="mobile-nav-container" style={{ flexShrink: 0 }}>
         <MobileBottomNav />
       </div>
 
@@ -169,6 +172,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           }
           .main-viewport-container {
             padding-bottom: 32px !important;
+            overflow-y: visible !important;
           }
         }
       `}</style>
