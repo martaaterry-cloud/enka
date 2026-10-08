@@ -116,7 +116,7 @@ export const TodayView: React.FC = () => {
       />
 
       {/* Category Filter Pills */}
-      <div
+      {categories.length > 0 && <div
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -176,7 +176,7 @@ export const TodayView: React.FC = () => {
             </button>
           );
         })}
-      </div>
+      </div>}
 
       {/* Main Day Timeline */}
       <div style={{ marginTop: '2px' }}>
@@ -184,9 +184,7 @@ export const TodayView: React.FC = () => {
           <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             Cronología de hoy
           </h2>
-          <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-            Base: Bullas
-          </span>
+
         </div>
 
         <TimelineList

@@ -3,7 +3,6 @@ import type { AppTab, ThemeMode } from '../../context';
 import { useEnka } from '../../context';
 import type { IconName } from '../ui/Icon';
 import { Icon } from '../ui/Icon';
-import { getISOWeekNumber } from '../../utils/dateUtils';
 
 interface SidebarItem {
   id: AppTab;
@@ -15,13 +14,12 @@ interface SidebarItem {
 const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: 'today', label: 'Hoy', iconName: 'Clock', description: 'Cronología y disponibilidad' },
   { id: 'calendar', label: 'Calendario', iconName: 'Calendar', description: 'Mes, semanas y eventos' },
-  { id: 'planning', label: 'Planificar', iconName: 'Compass', description: 'Gimnasio, TFG y bloques' },
-  { id: 'more', label: 'Más', iconName: 'MoreHorizontal', description: 'Lugares, rutinas y ajustes' }
+  { id: 'planning', label: 'Planificar', iconName: 'Compass', description: 'Organiza tu tiempo' },
+  { id: 'more', label: 'Más', iconName: 'MoreHorizontal', description: 'Categorías, lugares y ajustes' }
 ];
 
 export const DesktopSidebar: React.FC = () => {
-  const { currentTab, setCurrentTab, theme, setTheme, openCreateModal, weeklySummary } = useEnka();
-  const currentWeekNumber = React.useMemo(() => getISOWeekNumber(), []);
+  const { currentTab, setCurrentTab, theme, setTheme, openCreateModal } = useEnka();
 
   return (
     <aside
@@ -149,32 +147,6 @@ export const DesktopSidebar: React.FC = () => {
           );
         })}
       </nav>
-
-      {/* Weekly Widget Summary */}
-      <div
-        style={{
-          padding: '12px',
-          borderRadius: 'var(--radius-md)',
-          backgroundColor: 'var(--bg-surface-subtle)',
-          border: '1px solid var(--border-subtle)',
-          marginBottom: '16px'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Semana {currentWeekNumber}
-          </span>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--status-confirmed)' }}>
-            {weeklySummary.totalAvailableFreeHours}h libres
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Icon name="Dumbbell" size={12} color="#10B981" /> Gym
-          </span>
-          <span style={{ fontWeight: 600 }}>{weeklySummary.gymSessionsCompleted}/{weeklySummary.gymSessionsTarget}</span>
-        </div>
-      </div>
 
       {/* Theme Selector */}
       <div
