@@ -100,7 +100,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
           defaultTravelFromHomeMinutes: 0,
           isHomeBase: l.is_home_base,
           notes: l.notes ?? undefined
-        }))));
+        })));
       }
     };
     void load();
