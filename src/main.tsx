@@ -28,7 +28,15 @@ requestAnimationFrame(syncViewportHeight);
 // The plugin resolves the worker URL relative to Vite's /enka/ base.
 // A root-relative /sw.js would point outside the GitHub Pages app.
 if (import.meta.env.PROD) {
-  registerSW({ immediate: true });
+  const updateSW = registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      window.dispatchEvent(new Event('enka:update-available'));
+    },
+  });
+  window.addEventListener('enka:apply-update', () => {
+    void updateSW(true);
+  });
 }
 
 createRoot(document.getElementById('root')!).render(
