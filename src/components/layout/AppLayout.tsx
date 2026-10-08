@@ -20,7 +20,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div
       style={{
-        minHeight: '100dvh',
+        minHeight: '100svh',
         width: '100%',
         maxWidth: '100%',
         display: 'flex',
