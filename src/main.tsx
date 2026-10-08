@@ -8,14 +8,14 @@ import './styles/global.css';
 // iOS standalone PWAs may report an outdated viewport height on first paint.
 // Keep a pixel-based height synchronized when the app resumes or the viewport settles.
 const syncViewportHeight = () => {
-  const height = window.visualViewport?.height ?? window.innerHeight;
+  const height = window.innerHeight;
   if (height > 0) {
     document.documentElement.style.setProperty('--enka-viewport-height', `${Math.round(height)}px`);
   }
 };
 syncViewportHeight();
 window.addEventListener('resize', syncViewportHeight);
-window.visualViewport?.addEventListener('resize', syncViewportHeight);
+// Use layout viewport for the shell; visualViewport can exclude iOS safe areas.
 window.addEventListener('pageshow', syncViewportHeight);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
