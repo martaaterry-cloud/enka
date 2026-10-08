@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import type { Activity } from '../models/activity';
 import type { Category } from '../models/category';
-import { INITIAL_CATEGORIES } from '../models/category';
+import { enkaRepository } from '../services/enka';
+import { useAuth } from './useAuth';
 import type { LocationItem } from '../models/location';
-import { INITIAL_LOCATIONS } from '../models/location';
+
 import type { FlexibleGymSession, PlanningProject, WeeklyPlanningSummary } from '../models/planning';
 import {
   MOCK_ACTIVITIES,
@@ -58,8 +59,59 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return MOCK_ACTIVITIES;
   });
 
-  const [categories] = useState<Category[]>(INITIAL_CATEGORIES);
-  const [locations] = useState<LocationItem[]>(INITIAL_LOCATIONS);
+  const { user } = useAuth();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [locations, setLocations] = useState<LocationItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      if (!user) {
+        setCategories([]);
+        setLocations([]);
+        return;
+      }
+      const [categoryResult, locationResult] = await Promise.all([
+        enkaRepository.fetchCategories(),
+        enkaRepository.fetchLocations()
+      ]);
+      if (cancelled) return;
+      if (categoryResult.error) {
+        console.error('No se pudieron cargar las categorías de Enka.');
+        setCategories([]);
+      } else {
+        setCategories((categoryResult.data ?? []).filter(c => c.is_active).map(c => ({
+          id: c.id,
+          name: c.name,
+          iconName: c.icon_name,
+          color: c.color,
+          bgColor: c.color + '1F',
+          borderColor: c.color + '47'
+        })));
+      }
+      if (locationResult.error) {
+        console.error('No se pudieron cargar las ubicaciones de Enka.');
+        setLocations([]);
+      } else {
+        setLocations((locationResult.data ?? []).map(l => ({
+          id: l.id,
+          name: l.name,
+          address: l.address ?? '',
+          city: l.city ?? '',
+          latitude: l.latitude ?? undefined,
+          longitude: l.longitude ?? undefined
+        } as LocationItem)));
+      }
+    };
+    void load();
+    window.addEventListener('enka:data-changed', load);
+    window.addEventListener('focus', load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('enka:data-changed', load);
+      window.removeEventListener('focus', load);
+    };
+  }, [user]);
   const [gymSessions, setGymSessions] = useState<FlexibleGymSession[]>(INITIAL_GYM_SESSIONS);
   const [projects, setProjects] = useState<PlanningProject[]>(INITIAL_PROJECTS);
   const [weeklySummary, setWeeklySummary] = useState<WeeklyPlanningSummary>(INITIAL_WEEKLY_SUMMARY);
