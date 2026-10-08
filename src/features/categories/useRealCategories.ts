@@ -65,6 +65,7 @@ export function useRealCategories() {
     }
     if (result.data) {
       setCategories((prev) => [...prev, result.data!]);
+      window.dispatchEvent(new Event('enka:data-changed'));
     }
     return { data: result.data, error: null };
   };
@@ -79,6 +80,7 @@ export function useRealCategories() {
     }
     if (result.data) {
       setCategories((prev) => prev.map((c) => (c.id === id ? result.data! : c)));
+      window.dispatchEvent(new Event('enka:data-changed'));
     }
     return { data: result.data, error: null };
   };
@@ -89,6 +91,7 @@ export function useRealCategories() {
       return { success: false, error: result.error.message };
     }
     setCategories((prev) => prev.filter((c) => c.id !== id));
+    window.dispatchEvent(new Event('enka:data-changed'));
     return { success: true, error: null };
   };
 
