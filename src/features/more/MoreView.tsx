@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { buildInfo } from '../../buildInfo';
 import type { ThemeMode } from '../../context';
 import { useEnka, useAuth } from '../../context';
 import type { IconName } from '../../components/ui/Icon';
@@ -20,6 +21,24 @@ interface SectionItem {
 export const MoreView: React.FC = () => {
   const { theme, setTheme, projects } = useEnka();
   const { user, signOut } = useAuth();
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  useEffect(() => {
+    const onUpdate = () => setUpdateAvailable(true);
+    window.addEventListener('enka:update-available', onUpdate);
+    return () => window.removeEventListener('enka:update-available', onUpdate);
+  }, []);
+  const checkForUpdates = async () => {
+    setCheckingUpdate(true);
+    try {
+      const registration = await navigator.serviceWorker?.getRegistration(import.meta.env.BASE_URL);
+      await registration?.update();
+    } catch (error) {
+      console.warn('No se pudo comprobar la actualización', error);
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
   const [currentSection, setCurrentSection] = useState<SectionId>('menu');
   const [isDiagnosticOpen, setIsDiagnosticOpen] = useState(false);
   const [diagnosticRunning, setDiagnosticRunning] = useState<boolean>(false);
@@ -264,6 +283,26 @@ export const MoreView: React.FC = () => {
                 <span>Cerrar sesión</span>
               </button>
             </div>
+          </div>
+
+          {/* Installed build and PWA updates */}
+          <div style={{ padding: '12px 14px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <strong style={{ fontSize: '0.8125rem' }}>Versión instalada</strong>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+              Compilación {buildInfo.commit} · {new Date(buildInfo.builtAt).toLocaleString('es-ES')}
+            </div>
+            <div style={{ fontSize: '0.71875rem', color: 'var(--text-muted)' }}>
+              Esta es la versión que está ejecutando tu dispositivo, no necesariamente la última publicada.
+            </div>
+            {updateAvailable ? (
+              <button type="button" onClick={() => window.dispatchEvent(new Event('enka:apply-update'))} style={{ padding: '9px 12px', background: 'var(--text-primary)', color: 'var(--text-inverse)', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}>
+                Nueva versión disponible · Actualizar ahora
+              </button>
+            ) : (
+              <button type="button" onClick={checkForUpdates} disabled={checkingUpdate} style={{ padding: '9px 12px', background: 'var(--bg-surface-subtle)', color: 'var(--text-primary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-default)' }}>
+                {checkingUpdate ? 'Comprobando…' : 'Buscar actualización'}
+              </button>
+            )}
           </div>
 
           {/* Collapsible Advanced Diagnostics */}
