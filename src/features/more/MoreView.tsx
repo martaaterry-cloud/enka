@@ -72,7 +72,6 @@ export const MoreView: React.FC = () => {
       title: 'Rutinas',
       subtitle: 'Trabajo, entrenamientos y clases fijas',
       icon: 'Repeat',
-      badge: '3 activas'
     },
     {
       id: 'proyectos',
@@ -388,56 +387,10 @@ export const MoreView: React.FC = () => {
       {/* Lugares */}
       {currentSection === 'lugares' && <LocationManagementSection />}
 
-      {/* Rutinas */}
+      {/* Rutinas: no predefined example schedules */}
       {currentSection === 'rutinas' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ padding: '10px 12px', backgroundColor: 'var(--bg-surface-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', fontSize: '0.71875rem', color: 'var(--text-secondary)' }}>
-            <strong>Recurrencias semanales fijas:</strong> Compromisos que estructuran tus días de forma predeterminada.
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ padding: '12px 14px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                <div style={{ minWidth: 0 }}>
-                  <h3 style={{ fontSize: '0.875rem', fontWeight: 700 }} className="truncate">Trabajo en SYTE Automation SL</h3>
-                  <div style={{ fontSize: '0.71875rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    Lunes a Viernes · 07:00 – 15:00 · Alcantarilla
-                  </div>
-                </div>
-                <span style={{ fontSize: '0.625rem', fontWeight: 600, color: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px', flexShrink: 0 }}>
-                  Trabajo
-                </span>
-              </div>
-            </div>
-
-            <div style={{ padding: '12px 14px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                <div style={{ minWidth: 0 }}>
-                  <h3 style={{ fontSize: '0.875rem', fontWeight: 700 }} className="truncate">Entrenamientos (Senior Femenino)</h3>
-                  <div style={{ fontSize: '0.71875rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    Lunes, Miércoles, Viernes · Pabellón Juan Valera, Bullas
-                  </div>
-                </div>
-                <span style={{ fontSize: '0.625rem', fontWeight: 600, color: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '2px 6px', borderRadius: '4px', flexShrink: 0 }}>
-                  Balonmano
-                </span>
-              </div>
-            </div>
-
-            <div style={{ padding: '12px 14px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                <div style={{ minWidth: 0 }}>
-                  <h3 style={{ fontSize: '0.875rem', fontWeight: 700 }} className="truncate">Academia Método (Inglés B2)</h3>
-                  <div style={{ fontSize: '0.71875rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    Lunes y Miércoles · 19:30 – 21:00 · Bullas
-                  </div>
-                </div>
-                <span style={{ fontSize: '0.625rem', fontWeight: 600, color: '#8B5CF6', backgroundColor: 'rgba(139, 92, 246, 0.1)', padding: '2px 6px', borderRadius: '4px', flexShrink: 0 }}>
-                  Inglés
-                </span>
-              </div>
-            </div>
-          </div>
+        <div style={{ padding: '14px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+          No hay rutinas configuradas. Las añadiremos cuando conectemos la planificación real.
         </div>
       )}
 
