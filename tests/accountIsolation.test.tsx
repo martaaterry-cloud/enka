@@ -1,6 +1,6 @@
 import React, { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { App } from '../src/App';
 import { useEnka } from '../src/context/useEnka';
 import { setAuthIdentity } from '../src/context/authIdentity';
@@ -33,7 +33,11 @@ vi.mock('../src/features/today/TodayView', () => ({ TodayView: () => {
 const fixture = { id: 'a', title: 'Privado A', categoryId: 'c', date: '2026-10-13', certainty: 'confirmed' as const, createdAt: '2026-10-13T10:00:00Z' };
 function session(id: string) { return { user: { id } }; }
 async function emit(id: string | null) { await act(async () => { auth.callback?.('CHANGE', id ? session(id) : null); }); }
-async function start() { render(<StrictMode><App /></StrictMode>); await screen.findByText('Privado A'); }
+async function start() {
+  // Flush Auth initialization and passive mount effects before invoking context callbacks.
+  await act(async () => { render(<StrictMode><App /></StrictMode>); });
+  await screen.findByText('Privado A');
+}
 beforeEach(async () => {
   localStorage.clear(); renders.length = 0; setAuthIdentity(null); auth.initial = session('A'); auth.initialPromise = null;
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) });
@@ -108,6 +112,37 @@ describe('integración AuthGate / EnkaProvider', () => {
     await start(); vi.spyOn(crypto, 'randomUUID').mockImplementation(() => { throw new Error('simulated unavailable'); });
     await act(async () => { expect(await context.addActivity({ ...fixture, title: 'No creado' })).toBe(false); });
     expect(context.activities).toEqual([fixture]); expect(screen.getByRole('alert').textContent).toContain('crear actividades');
+  });
+  it.each(['update', 'cancel', 'delete'] as const)('un %s pendiente no restaura ni cierra una selección nueva', async action => {
+    const other = { ...fixture, id: 'other', title: 'Otra actividad' };
+    const store = createActivityStore(localStorage, 'https://simulated.invalid', 'A', () => true, async (_key, fn) => fn());
+    store.load(); await store.save([fixture, other]); await start();
+    await act(async () => { context.openDetailModal(fixture); });
+    let release!: () => void;
+    Object.defineProperty(navigator, 'locks', { configurable: true, value: { request: (_key: string, fn: () => unknown) => new Promise((resolve, reject) => {
+      release = () => { try { resolve(fn()); } catch (error) { reject(error); } };
+    }) } });
+    let pending!: Promise<boolean>;
+    act(() => { pending = action === 'update' ? context.updateActivity('a', { title: 'Editado' }) : action === 'cancel' ? context.cancelActivity('a') : context.deleteActivity('a'); });
+    await act(async () => { context.closeDetailModal(); context.openDetailModal(other); });
+    await act(async () => { release(); expect(await pending).toBe(true); });
+    expect(context.selectedActivity).toEqual(other); expect(context.isDetailModalOpen).toBe(true);
+  });
+  it('un guardado pendiente no vuelve a seleccionar una actividad tras cerrar su modal', async () => {
+    await start(); await act(async () => { context.openDetailModal(fixture); });
+    let release!: () => void;
+    Object.defineProperty(navigator, 'locks', { configurable: true, value: { request: (_key: string, fn: () => unknown) => new Promise((resolve, reject) => {
+      release = () => { try { resolve(fn()); } catch (error) { reject(error); } };
+    }) } });
+    let pending!: Promise<boolean>; act(() => { pending = context.updateActivity('a', { title: 'Editado' }); });
+    await act(async () => { context.closeDetailModal(); });
+    await act(async () => { release(); expect(await pending).toBe(true); });
+    expect(context.selectedActivity).toBeNull(); expect(context.isDetailModalOpen).toBe(false);
+  });
+  it('permite cerrar sesión con un documento corrupto sin modificarlo', async () => {
+    const key = 'enka:https%3A%2F%2Fsimulated.invalid:activities:v1:A'; localStorage.setItem(key, '{corrupto'); render(<App />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
+    await screen.findByText('Sesión cerrada'); expect(localStorage.getItem(key)).toBe('{corrupto'); expect(localStorage.getItem('enka:activities')).toBe('[legado simulado]');
   });
   it('bloquea el contenido cuando el documento de cuenta está corrupto', async () => {
     localStorage.setItem('enka:https%3A%2F%2Fsimulated.invalid:activities:v1:A', '{corrupto'); render(<App />);

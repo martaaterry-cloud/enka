@@ -14,10 +14,9 @@ type RecurrenceScope = 'this_occurrence' | 'following_occurrences' | 'all_occurr
 
 interface ActivityDetailContentProps {
   activity: Activity;
-  onClose: () => void;
 }
 
-const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity, onClose }) => {
+const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity }) => {
   const {
     categories,
     locations,
@@ -113,7 +112,6 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
       if (!await cancelActivity(activity.id, scope)) return;
     } else if (pendingAction === 'delete') {
       if (!await deleteActivity(activity.id, scope)) return;
-      onClose();
     }
 
     setIsScopeModalOpen(false);
@@ -457,7 +455,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                   const isSelected = categoryId === cat.id;
                   return (
                     <button
-                disabled={saving}
+                      disabled={saving}
                       key={cat.id}
                       type="button"
                       onClick={() => setCategoryId(cat.id)}
@@ -614,7 +612,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                   const isSelected = selectedLocationId === loc.id;
                   return (
                     <button
-                disabled={saving}
+                      disabled={saving}
                       key={loc.id}
                       type="button"
                       onClick={() => {
@@ -689,7 +687,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                   const isSelected = certainty === opt.value;
                   return (
                     <button
-                disabled={saving}
+                      disabled={saving}
                       key={opt.value}
                       type="button"
                       onClick={() => setCertainty(opt.value)}
@@ -807,7 +805,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             </p>
 
             <button
-                disabled={saving}
+              disabled={saving}
               onClick={() => handleScopeSelect('this_occurrence')}
               style={{
                 display: 'flex',
@@ -835,7 +833,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             </button>
 
             <button
-                disabled={saving}
+              disabled={saving}
               onClick={() => handleScopeSelect('following_occurrences')}
               style={{
                 display: 'flex',
@@ -863,7 +861,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             </button>
 
             <button
-                disabled={saving}
+              disabled={saving}
               onClick={() => handleScopeSelect('all_occurrences')}
               style={{
                 display: 'flex',
@@ -891,7 +889,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             </button>
 
             <button
-                disabled={saving}
+              disabled={saving}
               onClick={() => {
                 setIsScopeModalOpen(false);
                 setPendingAction(null);
@@ -1058,7 +1056,6 @@ export const ActivityDetailModal: React.FC = () => {
       <ActivityDetailContent
         key={`${selectedActivity.id}-${selectedActivity.date}-${selectedActivity.startTime}-${selectedActivity.isCancelled ? 'c' : 'a'}`}
         activity={selectedActivity}
-        onClose={closeDetailModal}
       />
     </ModalSheet>
   );

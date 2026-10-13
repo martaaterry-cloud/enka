@@ -17,6 +17,12 @@ describe('almacenamiento local protegido', () => {
     expect(s.getItem.mock.calls.every(([k]) => k === store.key)).toBe(true);
     expect(s.setItem.mock.calls.every(([k]) => k === store.key)).toBe(true);
   });
+  it.each([null, 'complete', 'inesperado'])('conserva un legado válido con marcador %s', async marker => {
+    const s = memory(); const raw = JSON.stringify([activity]); s.data.set('enka:activities', raw);
+    if (marker !== null) s.data.set('enka:reset-2026-10', marker);
+    const a = createActivityStore(s, 'project', 'A', () => true, lock); expect(a.load()).toEqual([]); await a.save([]);
+    expect(s.data.get('enka:activities')).toBe(raw); expect(s.data.get('enka:reset-2026-10') ?? null).toBe(marker);
+  });
   it('separa cuentas y proyectos, y conserva cambios tras recargar', async () => {
     const s = memory(); const a = createActivityStore(s, 'project', 'A', () => true, lock); a.load(); await a.save([activity]);
     expect(createActivityStore(s, 'project', 'B', () => true, lock).load()).toEqual([]);
@@ -80,4 +86,15 @@ describe('escrituras pendientes', () => {
     s.getItem.mockImplementation(key => s.data.get(key) ?? null);
     await expect(a.save([])).rejects.toThrow('no está disponible'); expect(a.load()).toEqual([activity]);
   });
+});
+
+// Reproduction of the previously published initializer, only on a synthetic Map.
+// This documents a release blocker, not a behavior implemented by the new store.
+it('una versión antigua aún puede borrar el legado sin marcador, aunque exista un documento nuevo', async () => {
+  const s = memory(); s.data.set('enka:activities', JSON.stringify([activity]));
+  const a = createActivityStore(s, 'project', 'A', () => true, lock); a.load(); await a.save([activity]); const protectedRaw = s.data.get(a.key);
+  if (s.data.get('enka:reset-2026-10') !== 'complete') {
+    s.data.delete('enka:activities'); s.data.set('enka:reset-2026-10', 'complete');
+  }
+  expect(s.data.has('enka:activities')).toBe(false); expect(s.data.get(a.key)).toBe(protectedRaw);
 });

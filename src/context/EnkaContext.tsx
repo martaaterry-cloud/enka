@@ -21,7 +21,7 @@ import { captureAuthIdentity } from './authIdentity';
 const LOCAL_STORAGE_KEY_THEME = 'enka:theme';
 
 export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, signOut, isLoading: authLoading } = useAuth();
   const [saving, setSaving] = useState(false);
   const busy = useRef(false);
   const mounted = useRef(false);
@@ -90,6 +90,8 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!mounted.current || !isCurrent()) return false;
       latestActivities.current = updated;
       setActivities(updated);
+      // Resolve against the selection at completion, never the selection captured before the lock.
+      setSelectedActivity(current => current ? updated.find(a => a.id === current.id) ?? null : null);
       setStorageError(null);
       return true;
     } catch (error) {
@@ -266,10 +268,6 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (!await persistActivities(updated)) return false;
 
-    // Update selectedActivity if open
-    if (selectedActivity && selectedActivity.id === id) {
-      setSelectedActivity({ ...selectedActivity, ...updates, isOccurrenceException: target.isRecurrent ? true : selectedActivity.isOccurrenceException });
-    }
     return true;
   };
 
@@ -332,14 +330,6 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (!await persistActivities(updated)) return false;
 
-    if (selectedActivity && selectedActivity.id === id) {
-      setSelectedActivity({
-        ...selectedActivity,
-        isCancelled: true,
-        cancellationReason: reason || 'Cancelada',
-        isOccurrenceException: target.isRecurrent ? true : selectedActivity.isOccurrenceException
-      });
-    }
     return true;
   };
 
@@ -383,9 +373,6 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (!await persistActivities(updated)) return false;
 
-    if (selectedActivity && selectedActivity.id === id) {
-      closeDetailModal();
-    }
     return true;
   };
 
@@ -460,7 +447,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
         openCreateModal,
         closeCreateModal,
         selectedActivity,
-        isDetailModalOpen,
+        isDetailModalOpen: isDetailModalOpen && selectedActivity !== null,
         openDetailModal,
         closeDetailModal,
         addActivity,
@@ -473,7 +460,12 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }}
     >
       {storageError && <div role="alert" style={{ padding: '12px', color: 'var(--text-primary)', background: 'var(--bg-surface)', border: '2px solid #EF4444' }}>{storageError}</div>}
-      {storageReady ? children : <p role="status">Las actividades no están disponibles. No se ha modificado el almacenamiento.</p>}
+      {storageReady ? children : <div>
+        <p role="status">Las actividades no están disponibles. No se ha modificado el almacenamiento.</p>
+        <button type="button" disabled={authLoading} onClick={() => {
+          void signOut().catch(() => setStorageError('No se pudo cerrar la sesión. Vuelve a intentarlo.'));
+        }}>Cerrar sesión</button>
+      </div>}
     </EnkaContext.Provider>
   );
 };
