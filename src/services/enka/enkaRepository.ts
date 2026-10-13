@@ -1,4 +1,6 @@
 import { getSupabase } from '../supabase/supabaseClient';
+import type { Activity } from '../../models/activity';
+import { toDbActivity, fromDbActivity } from './activityMapper';
 import type {
   DbCategory,
   DbLocation,
@@ -232,6 +234,59 @@ export const enkaRepository = {
         success: false,
         error: err instanceof Error ? err : new Error(String(err)),
       };
+    }
+  },
+
+
+  // ACTIVITY MUTATIONS — never write to a different user's rows.
+  async fetchUserActivities(): Promise<RepositoryQueryResult<Activity>> {
+    try {
+      const userId = await getAuthenticatedUserId();
+      const { data, error } = await getSupabase().from('enka_activities')
+        .select('*').eq('user_id', userId).order('start_date', { ascending: true });
+      if (error) return { data: null, error: new Error(error.message) };
+      return { data: ((data ?? []) as DbActivity[]).map(fromDbActivity), error: null };
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
+    }
+  },
+
+  async createActivity(activity: Activity): Promise<RepositorySingleResult<Activity>> {
+    try {
+      const userId = await getAuthenticatedUserId();
+      const { data, error } = await getSupabase().from('enka_activities')
+        .insert({ ...toDbActivity(activity), user_id: userId })
+        .select('*').single();
+      if (error) return { data: null, error: new Error(error.message) };
+      return { data: fromDbActivity(data as DbActivity), error: null };
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
+    }
+  },
+
+  async updateActivity(activity: Activity): Promise<RepositorySingleResult<Activity>> {
+    try {
+      const userId = await getAuthenticatedUserId();
+      const { data, error } = await getSupabase().from('enka_activities')
+        .update(toDbActivity(activity)).eq('id', activity.id).eq('user_id', userId)
+        .select('*').single();
+      if (error) return { data: null, error: new Error(error.message) };
+      return { data: fromDbActivity(data as DbActivity), error: null };
+    } catch (err) {
+      return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
+    }
+  },
+
+  async deleteActivity(id: string): Promise<RepositoryMutationResult> {
+    try {
+      const userId = await getAuthenticatedUserId();
+      const { error } = await getSupabase().from('enka_activities')
+        .delete().eq('id', id).eq('user_id', userId);
+      return error
+        ? { success: false, error: new Error(error.message) }
+        : { success: true, error: null };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err : new Error(String(err)) };
     }
   },
 
