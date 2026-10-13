@@ -20,7 +20,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div
       style={{
-        height: 'var(--enka-viewport-height, 100dvh)',
+        height: '100dvh',
         minHeight: 0,
         width: '100%',
         maxWidth: '100%',
