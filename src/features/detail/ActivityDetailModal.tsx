@@ -23,7 +23,9 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
     locations,
     updateActivity,
     cancelActivity,
-    deleteActivity
+    deleteActivity,
+    saving,
+    storageError
   } = useEnka();
 
   const [mode, setMode] = useState<ModalMode>('view');
@@ -73,7 +75,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
     };
   };
 
-  const handleSaveClick = (e: React.FormEvent) => {
+  const handleSaveClick = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
@@ -81,8 +83,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
       setPendingAction('edit');
       setIsScopeModalOpen(true);
     } else {
-      updateActivity(activity.id, getFormPayload(), 'this_occurrence');
-      setMode('view');
+      if (await updateActivity(activity.id, getFormPayload(), 'this_occurrence')) setMode('view');
     }
   };
 
@@ -104,14 +105,14 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
     }
   };
 
-  const handleScopeSelect = (scope: RecurrenceScope) => {
+  const handleScopeSelect = async (scope: RecurrenceScope) => {
     if (pendingAction === 'edit') {
-      updateActivity(activity.id, getFormPayload(), scope);
+      if (!await updateActivity(activity.id, getFormPayload(), scope)) return;
       setMode('view');
     } else if (pendingAction === 'cancel') {
-      cancelActivity(activity.id, scope);
+      if (!await cancelActivity(activity.id, scope)) return;
     } else if (pendingAction === 'delete') {
-      deleteActivity(activity.id, scope);
+      if (!await deleteActivity(activity.id, scope)) return;
       onClose();
     }
 
@@ -129,6 +130,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
   return (
     <>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        {storageError && <p role="alert">{storageError}</p>}
         {/* ========================================================= */}
         {/* VIEW MODE */}
         {/* ========================================================= */}
@@ -344,6 +346,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
               }}
             >
               <button
+                disabled={saving}
                 type="button"
                 onClick={() => setMode('edit')}
                 style={{
@@ -367,6 +370,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
               </button>
 
               <button
+                disabled={saving}
                 type="button"
                 onClick={handleCancelClick}
                 style={{
@@ -390,6 +394,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
               </button>
 
               <button
+                disabled={saving}
                 type="button"
                 onClick={handleDeleteClick}
                 style={{
@@ -452,6 +457,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                   const isSelected = categoryId === cat.id;
                   return (
                     <button
+                disabled={saving}
                       key={cat.id}
                       type="button"
                       onClick={() => setCategoryId(cat.id)}
@@ -608,6 +614,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                   const isSelected = selectedLocationId === loc.id;
                   return (
                     <button
+                disabled={saving}
                       key={loc.id}
                       type="button"
                       onClick={() => {
@@ -682,6 +689,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                   const isSelected = certainty === opt.value;
                   return (
                     <button
+                disabled={saving}
                       key={opt.value}
                       type="button"
                       onClick={() => setCertainty(opt.value)}
@@ -732,6 +740,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             {/* Edit Action Buttons */}
             <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
               <button
+                disabled={saving}
                 type="button"
                 onClick={() => setMode('view')}
                 style={{
@@ -749,6 +758,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                 Cancelar
               </button>
               <button
+                disabled={saving}
                 type="submit"
                 style={{
                   flex: 2,
@@ -791,11 +801,13 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
           maxWidth="420px"
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {storageError && <p role="alert">{storageError}</p>}
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>
               Esta actividad se repite periódicamente. Elige el alcance de tu acción:
             </p>
 
             <button
+                disabled={saving}
               onClick={() => handleScopeSelect('this_occurrence')}
               style={{
                 display: 'flex',
@@ -823,6 +835,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             </button>
 
             <button
+                disabled={saving}
               onClick={() => handleScopeSelect('following_occurrences')}
               style={{
                 display: 'flex',
@@ -850,6 +863,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             </button>
 
             <button
+                disabled={saving}
               onClick={() => handleScopeSelect('all_occurrences')}
               style={{
                 display: 'flex',
@@ -877,6 +891,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             </button>
 
             <button
+                disabled={saving}
               onClick={() => {
                 setIsScopeModalOpen(false);
                 setPendingAction(null);
@@ -911,11 +926,13 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
           maxWidth="380px"
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {storageError && <p role="alert">{storageError}</p>}
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: 0 }}>
               ¿Estás seguro de que quieres eliminar &quot;<strong>{activity.title}</strong>&quot;? Esta acción no se puede deshacer.
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
+                disabled={saving}
                 onClick={() => setIsDeleteConfirmOpen(false)}
                 style={{
                   flex: 1,
@@ -932,8 +949,9 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                 Volver
               </button>
               <button
-                onClick={() => {
-                  deleteActivity(activity.id, 'this_occurrence');
+                disabled={saving}
+                onClick={async () => {
+                  if (!await deleteActivity(activity.id, 'this_occurrence')) return;
                   setIsDeleteConfirmOpen(false);
                 }}
                 style={{
@@ -967,6 +985,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
           maxWidth="380px"
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {storageError && <p role="alert">{storageError}</p>}
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: 0 }}>
               {activity.isCancelled
                 ? `¿Deseas reactivar la actividad "${activity.title}"?`
@@ -974,6 +993,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
+                disabled={saving}
                 onClick={() => setIsCancelConfirmOpen(false)}
                 style={{
                   flex: 1,
@@ -990,11 +1010,12 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                 Volver
               </button>
               <button
-                onClick={() => {
+                disabled={saving}
+                onClick={async () => {
                   if (activity.isCancelled) {
-                    updateActivity(activity.id, { isCancelled: false, cancellationReason: undefined }, 'this_occurrence');
+                    if (!await updateActivity(activity.id, { isCancelled: false, cancellationReason: undefined }, 'this_occurrence')) return;
                   } else {
-                    cancelActivity(activity.id, 'this_occurrence', 'Cancelada por el usuario');
+                    if (!await cancelActivity(activity.id, 'this_occurrence', 'Cancelada por el usuario')) return;
                   }
                   setIsCancelConfirmOpen(false);
                 }}

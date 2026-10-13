@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Activity } from '../models/activity';
 import type { Category } from '../models/category';
 import { enkaRepository } from '../services/enka';
@@ -7,7 +7,6 @@ import type { LocationItem } from '../models/location';
 
 import type { FlexibleGymSession, PlanningProject, WeeklyPlanningSummary } from '../models/planning';
 import {
-  MOCK_ACTIVITIES,
   INITIAL_GYM_SESSIONS,
   INITIAL_PROJECTS,
   INITIAL_WEEKLY_SUMMARY
@@ -15,14 +14,46 @@ import {
 import { getTodayDateString } from '../utils/dateUtils';
 import type { AppTab, ThemeMode } from './enkaContextCore';
 import { EnkaContext } from './enkaContextCore';
+import { SUPABASE_PROJECT_URL } from '../services/supabase/supabaseClient';
+import { createActivityStore } from '../services/local/activityStorage';
+import { captureAuthIdentity } from './authIdentity';
 
 const LOCAL_STORAGE_KEY_THEME = 'enka:theme';
-const LOCAL_STORAGE_KEY_ACTIVITIES = 'enka:activities';
 
 export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const [saving, setSaving] = useState(false);
+  const busy = useRef(false);
+  const mounted = useRef(false);
+  const [isCurrent] = useState(() => captureAuthIdentity(user?.id ?? ''));
+  const [store] = useState(() => user ? createActivityStore({
+    getItem: key => window.localStorage.getItem(key),
+    setItem: (key, value) => window.localStorage.setItem(key, value),
+  }, SUPABASE_PROJECT_URL, user.id, isCurrent,
+  navigator.locks ? (name, action) => navigator.locks.request(name, action) : undefined) : null);
+
+  const [initial] = useState(() => {
+    try {
+      if (!store) throw new Error('Sin sesión');
+      return { activities: store.load(), error: null };
+    } catch {
+      return { activities: [] as Activity[], error: 'No se pudieron cargar las actividades de esta cuenta. Los datos se conservan. Recarga para volver a intentarlo.' };
+    }
+  });
+  const [activities, setActivities] = useState<Activity[]>(initial.activities);
+  const latestActivities = useRef(initial.activities);
+  const [storageError, setStorageError] = useState<string | null>(initial.error);
+  const storageReady = initial.error === null;
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
   const [theme, setThemeState] = useState<ThemeMode>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY_THEME) as ThemeMode;
-    return saved || 'system';
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY_THEME);
+      return saved === 'light' || saved === 'dark' ? saved : 'system';
+    } catch { return 'system'; }
   });
 
   const [systemDark, setSystemDark] = useState<boolean>(() => {
@@ -40,31 +71,35 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', activeTheme);
-    localStorage.setItem(LOCAL_STORAGE_KEY_THEME, theme);
   }, [activeTheme, theme]);
 
   const [currentTab, setCurrentTab] = useState<AppTab>('today');
   const [selectedDate, setSelectedDate] = useState<string>(() => getTodayDateString());
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
 
-  const [activities, setActivities] = useState<Activity[]>(() => {
-    // One-time reset of old test data on each device; never touches auth tokens.
-    if (localStorage.getItem('enka:reset-2026-10') !== 'complete') {
-      localStorage.removeItem(LOCAL_STORAGE_KEY_ACTIVITIES);
-      localStorage.setItem('enka:reset-2026-10', 'complete');
+  const persistActivities = async (updated: Activity[]): Promise<boolean> => {
+    if (!mounted.current || !isCurrent()) return false;
+    if (busy.current || !storageReady || !store || latestActivities.current !== activities) {
+      setStorageError('No se puede guardar todavía. Espera a que termine la operación o recarga.');
+      return false;
     }
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY_ACTIVITIES);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return MOCK_ACTIVITIES;
-      }
+    busy.current = true;
+    setSaving(true);
+    try {
+      await store.save(updated);
+      if (!mounted.current || !isCurrent()) return false;
+      latestActivities.current = updated;
+      setActivities(updated);
+      setStorageError(null);
+      return true;
+    } catch (error) {
+      if (mounted.current && isCurrent()) setStorageError(error instanceof Error ? error.message : 'No se pudo guardar. Los datos anteriores se conservan.');
+      return false;
+    } finally {
+      busy.current = false;
+      if (mounted.current && isCurrent()) setSaving(false);
     }
-    return MOCK_ACTIVITIES;
-  });
-
-  const { user } = useAuth();
+  };
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<LocationItem[]>([]);
 
@@ -80,7 +115,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
         enkaRepository.fetchCategories(),
         enkaRepository.fetchLocations()
       ]);
-      if (cancelled) return;
+      if (cancelled || !isCurrent()) return;
       if (categoryResult.error) {
         console.error('No se pudieron cargar las categorías de Enka.');
         setCategories([]);
@@ -116,7 +151,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       window.removeEventListener('enka:data-changed', load);
       window.removeEventListener('focus', load);
     };
-  }, [user]);
+  }, [user, isCurrent]);
   const [gymSessions, setGymSessions] = useState<FlexibleGymSession[]>(INITIAL_GYM_SESSIONS);
   const [projects, setProjects] = useState<PlanningProject[]>(INITIAL_PROJECTS);
   const [weeklySummary, setWeeklySummary] = useState<WeeklyPlanningSummary>(INITIAL_WEEKLY_SUMMARY);
@@ -126,7 +161,10 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
 
   const setTheme = (mode: ThemeMode) => {
-    setThemeState(mode);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY_THEME, mode);
+      setThemeState(mode);
+    } catch { setStorageError('No se pudo guardar la preferencia de tema.'); }
   };
 
   const openCreateModal = (defaultDate?: string) => {
@@ -150,24 +188,30 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSelectedActivity(null);
   };
 
-  const addActivity = (activityData: Omit<Activity, 'id' | 'createdAt'>) => {
+  const addActivity = async (activityData: Omit<Activity, 'id' | 'createdAt'>) => {
+    if (!mounted.current || !isCurrent()) return false;
+    let id: string;
+    try { id = crypto.randomUUID(); }
+    catch {
+      setStorageError('Este navegador no permite crear actividades de forma segura.');
+      return false;
+    }
     const newActivity: Activity = {
       ...activityData,
-      id: `act-${Date.now()}`,
+      id,
       createdAt: new Date().toISOString()
     };
     const updated = [newActivity, ...activities];
-    setActivities(updated);
-    localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVITIES, JSON.stringify(updated));
+    return persistActivities(updated);
   };
 
-  const updateActivity = (
+  const updateActivity = async (
     id: string,
     updates: Partial<Activity>,
     scope: 'this_occurrence' | 'following_occurrences' | 'all_occurrences' = 'this_occurrence'
   ) => {
     const target = activities.find(a => a.id === id);
-    if (!target) return;
+    if (!target) return false;
 
     let updated: Activity[];
 
@@ -220,22 +264,22 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }
 
-    setActivities(updated);
-    localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVITIES, JSON.stringify(updated));
+    if (!await persistActivities(updated)) return false;
 
     // Update selectedActivity if open
     if (selectedActivity && selectedActivity.id === id) {
       setSelectedActivity({ ...selectedActivity, ...updates, isOccurrenceException: target.isRecurrent ? true : selectedActivity.isOccurrenceException });
     }
+    return true;
   };
 
-  const cancelActivity = (
+  const cancelActivity = async (
     id: string,
     scope: 'this_occurrence' | 'following_occurrences' | 'all_occurrences' = 'this_occurrence',
     reason?: string
   ) => {
     const target = activities.find(a => a.id === id);
-    if (!target) return;
+    if (!target) return false;
 
     let updated: Activity[];
 
@@ -286,8 +330,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }
 
-    setActivities(updated);
-    localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVITIES, JSON.stringify(updated));
+    if (!await persistActivities(updated)) return false;
 
     if (selectedActivity && selectedActivity.id === id) {
       setSelectedActivity({
@@ -297,14 +340,15 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isOccurrenceException: target.isRecurrent ? true : selectedActivity.isOccurrenceException
       });
     }
+    return true;
   };
 
-  const deleteActivity = (
+  const deleteActivity = async (
     id: string,
     scope: 'this_occurrence' | 'following_occurrences' | 'all_occurrences' = 'this_occurrence'
   ) => {
     const target = activities.find(a => a.id === id);
-    if (!target) return;
+    if (!target) return false;
 
     let updated: Activity[];
 
@@ -337,12 +381,12 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }
 
-    setActivities(updated);
-    localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVITIES, JSON.stringify(updated));
+    if (!await persistActivities(updated)) return false;
 
     if (selectedActivity && selectedActivity.id === id) {
       closeDetailModal();
     }
+    return true;
   };
 
   const toggleGymSession = (id: string) => {
@@ -394,6 +438,9 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <EnkaContext.Provider
       value={{
+        storageError,
+        storageReady,
+        saving,
         theme,
         activeTheme,
         setTheme,
@@ -425,7 +472,8 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
         getActivitiesForDate
       }}
     >
-      {children}
+      {storageError && <div role="alert" style={{ padding: '12px', color: 'var(--text-primary)', background: 'var(--bg-surface)', border: '2px solid #EF4444' }}>{storageError}</div>}
+      {storageReady ? children : <p role="status">Las actividades no están disponibles. No se ha modificado el almacenamiento.</p>}
     </EnkaContext.Provider>
   );
 };

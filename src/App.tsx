@@ -1,4 +1,5 @@
 import React from 'react';
+import { SUPABASE_PROJECT_URL } from './services/supabase/supabaseClient';
 import { AuthProvider, useAuth, EnkaProvider, useEnka } from './context';
 import { LoginPage } from './features/auth/LoginPage';
 import { AppLayout } from './components/layout/AppLayout';
@@ -26,7 +27,7 @@ const MainRouter: React.FC = () => {
 };
 
 const AuthGate: React.FC = () => {
-  const { user, authChecked } = useAuth();
+  const { user, authChecked, identityVersion } = useAuth();
 
   if (!authChecked) {
     return (
@@ -58,7 +59,7 @@ const AuthGate: React.FC = () => {
   }
 
   return (
-    <EnkaProvider>
+    <EnkaProvider key={`${SUPABASE_PROJECT_URL}:${user.id}:${identityVersion}`}>
       <MainRouter />
     </EnkaProvider>
   );
