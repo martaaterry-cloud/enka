@@ -11,7 +11,7 @@ interface ActivityFormProps {
 }
 
 const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => {
-  const { addActivity, categories, locations } = useEnka();
+  const { addActivity, categories, locations, saving, storageError } = useEnka();
 
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState(categories[0]?.id || 'trabajo');
@@ -25,13 +25,13 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
   const [certainty, setCertainty] = useState<CertaintyLevel>('confirmed');
   const [notes, setNotes] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
     const loc = locations.find(l => l.id === selectedLocationId);
 
-    addActivity({
+    const saved = await addActivity({
       title: title.trim(),
       categoryId,
       date,
@@ -47,7 +47,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
       notes: notes.trim() || undefined
     });
 
-    onClose();
+    if (saved) onClose();
   };
 
   const certaintyOptions: { value: CertaintyLevel; label: string; icon: string }[] = [
@@ -59,6 +59,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      {storageError && <p role="alert">{storageError}</p>}
       {/* Title Input */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
         <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
@@ -349,7 +350,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
           Cancelar
         </button>
         <button
-          type="submit"
+          type="submit" disabled={saving}
           style={{
             flex: 2,
             padding: '9px',

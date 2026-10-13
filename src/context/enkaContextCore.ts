@@ -8,6 +8,9 @@ export type AppTab = 'today' | 'calendar' | 'planning' | 'more';
 export type ThemeMode = 'light' | 'dark' | 'system';
 
 export interface EnkaContextType {
+  storageError: string | null;
+  storageReady: boolean;
+  saving: boolean;
   theme: ThemeMode;
   activeTheme: 'light' | 'dark';
   setTheme: (mode: ThemeMode) => void;
@@ -30,10 +33,10 @@ export interface EnkaContextType {
   isDetailModalOpen: boolean;
   openDetailModal: (activity: Activity) => void;
   closeDetailModal: () => void;
-  addActivity: (activity: Omit<Activity, 'id' | 'createdAt'>) => void;
-  updateActivity: (id: string, updates: Partial<Activity>, scope?: 'this_occurrence' | 'following_occurrences' | 'all_occurrences') => void;
-  cancelActivity: (id: string, scope?: 'this_occurrence' | 'following_occurrences' | 'all_occurrences', reason?: string) => void;
-  deleteActivity: (id: string, scope?: 'this_occurrence' | 'following_occurrences' | 'all_occurrences') => void;
+  addActivity: (activity: Omit<Activity, 'id' | 'createdAt'>) => Promise<boolean>;
+  updateActivity: (id: string, updates: Partial<Activity>, scope?: 'this_occurrence' | 'following_occurrences' | 'all_occurrences') => Promise<boolean>;
+  cancelActivity: (id: string, scope?: 'this_occurrence' | 'following_occurrences' | 'all_occurrences', reason?: string) => Promise<boolean>;
+  deleteActivity: (id: string, scope?: 'this_occurrence' | 'following_occurrences' | 'all_occurrences') => Promise<boolean>;
   toggleGymSession: (id: string) => void;
   toggleProjectSession: (projectId: string, sessionId: string) => void;
   getActivitiesForDate: (date: string) => Activity[];

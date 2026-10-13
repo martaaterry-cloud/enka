@@ -1,7 +1,8 @@
-﻿import { createContext } from 'react';
+import { createContext } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 
 export interface AuthContextType {
+  identityVersion: number;
   user: User | null;
   session: Session | null;
   isLoading: boolean;
