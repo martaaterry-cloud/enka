@@ -43,6 +43,11 @@ requestAnimationFrame(syncViewportHeight);
 const captureViewport = (phase: string) => {
   const nav = document.querySelector('nav[aria-label="Navegación principal móvil"]');
   const rect = nav?.getBoundingClientRect();
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;bottom:0;left:0;height:env(safe-area-inset-bottom,0px);width:1px;visibility:hidden;pointer-events:none';
+  document.body.appendChild(probe);
+  const safeBottom = probe.getBoundingClientRect().height;
+  probe.remove();
   const data = {
     phase,
     standalone: window.matchMedia('(display-mode: standalone)').matches,
@@ -54,6 +59,14 @@ const captureViewport = (phase: string) => {
     visualOffset: window.visualViewport?.offsetTop ?? null,
     navBottom: rect?.bottom ?? null,
     navGap: rect ? window.innerHeight - rect.bottom : null,
+    screenHeight: window.screen.height,
+    outerHeight: window.outerHeight,
+    safeBottom,
+    navTop: rect?.top ?? null,
+    navHeight: rect?.height ?? null,
+    navPaddingBottom: nav ? getComputedStyle(nav).paddingBottom : null,
+    bodyHeight: document.body.getBoundingClientRect().height,
+    documentScrollHeight: document.documentElement.scrollHeight,
   };
   try { sessionStorage.setItem('enka:viewport:' + phase, JSON.stringify(data)); } catch { /* private mode */ }
 };
