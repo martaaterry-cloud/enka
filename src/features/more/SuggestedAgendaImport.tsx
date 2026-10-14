@@ -55,7 +55,19 @@ export const SuggestedAgendaImport: React.FC = () => {
     setMessage('');
     setError('');
     try {
-      const existing = await enkaRepository.fetchActivities();
+      const [categoryResult, locationResult] = await Promise.all([
+        enkaRepository.fetchCategories(), enkaRepository.fetchLocations()
+      ]);
+      if (categoryResult.error || locationResult.error || !categoryResult.data || !locationResult.data)
+        throw categoryResult.error || locationResult.error || new Error('No se pudieron comprobar categorías y lugares.');
+      const categoryFor = (title: string) =>
+        /balonmano|partido|ucam/i.test(title) ? 'Balonmano' :
+        /láser|dentista/i.test(title) ? 'Salud' :
+        /graduación/i.test(title) ? 'Estudios' : 'Personal';
+      const locationFor = (title: string) =>
+        /bullense|ucam/i.test(title) ? 'Pabellón Juan Valera' :
+        /graduación/i.test(title) ? 'Universidad de Alicante' : null;
+            const existing = await enkaRepository.fetchActivities();
       if (existing.error || !existing.data) throw existing.error || new Error('No se pudieron comprobar los registros existentes.');
       const known = [...existing.data];
       let added = 0;
@@ -68,13 +80,16 @@ export const SuggestedAgendaImport: React.FC = () => {
         if (alreadySaved) { skipped++; continue; }
         const result = await enkaRepository.createActivity({
           ...suggestion.payload,
+          category_id: categoryResult.data.find(c => c.name === categoryFor(suggestion.payload.title))?.id ?? null,
+          location_id: locationResult.data.find(l => l.name === locationFor(suggestion.payload.title))?.id ?? null,
           metadata: { suggestion_key: suggestion.key, source: 'enka-reviewed-agenda-20261014' }
         });
         if (result.error || !result.data) throw result.error || new Error('No se pudo guardar.');
         known.push(result.data);
         added++;
       }
-      setMessage(`Guardadas: ${added}. Ya existentes (no duplicadas): ${skipped}. Se han guardado en Supabase; la vista Hoy/Calendario aún requiere sincronización.`);
+      window.dispatchEvent(new Event('enka:data-changed'));
+      setMessage(`Guardadas: ${added}. Ya existentes (no duplicadas): ${skipped}. Sincronizadas con la nube.`);
     } catch (e) {
       setError((e instanceof Error ? e.message : 'Error de conexión') +
         ' Comprueba tus actividades antes de reintentar; las ya guardadas no se borran.');
