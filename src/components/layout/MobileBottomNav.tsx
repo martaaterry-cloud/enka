@@ -24,7 +24,11 @@ export const MobileBottomNav: React.FC = () => {
     <nav
       aria-label="Navegación principal móvil"
       style={{
-        position: 'relative',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        width: '100%',
         flexShrink: 0,
         height: 'calc(var(--bottom-nav-height) + var(--safe-bottom))',
         paddingBottom: 'var(--safe-bottom)',
