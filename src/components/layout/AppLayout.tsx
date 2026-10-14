@@ -20,8 +20,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div
       style={{
-        height: '100dvh',
-        minHeight: 0,
+        minHeight: '100dvh',
         width: '100%',
         maxWidth: '100%',
         display: 'flex',
@@ -46,8 +45,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             width: '100%',
             maxWidth: '100%',
             minHeight: 0,
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch'
+            overflowY: 'visible'
           }}
           className="main-viewport-container"
         >
@@ -165,8 +163,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             width: 100%;
             z-index: 50;
           }
-          .main-viewport-container {
-            padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom));
+          .main-content-wrapper {
+            padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 28px);
           }
         }
         @media (min-width: 840px) {
