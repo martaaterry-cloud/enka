@@ -5,6 +5,18 @@ import { registerSW } from 'virtual:pwa-register';
 import App from './App';
 import './styles/global.css';
 
+// Standalone iOS can restore a previous page scroll position before React mounts.
+// Keep the app at the top on fresh navigation and on a restored page session.
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+const resetInitialScroll = () => {
+  window.scrollTo(0, 0);
+};
+resetInitialScroll();
+window.addEventListener('pageshow', resetInitialScroll);
+requestAnimationFrame(resetInitialScroll);
+
 // iOS standalone PWAs may report an outdated viewport height on first paint.
 // Keep a pixel-based height synchronized when the app resumes or the viewport settles.
 const syncViewportHeight = () => {
