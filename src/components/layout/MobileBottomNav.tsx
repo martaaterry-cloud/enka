@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { AppTab } from '../../context';
 import { useEnka } from '../../context';
 import type { IconName } from '../ui/Icon';
@@ -19,13 +19,34 @@ const NAV_ITEMS: NavItem[] = [
 
 export const MobileBottomNav: React.FC = () => {
   const { currentTab, setCurrentTab, openCreateModal } = useEnka();
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    // On iOS standalone, the first fixed-layer paint can lag behind the app viewport.
+    // Force layout after mounting and when the installed app resumes.
+    const refresh = () => {
+      const nav = navRef.current;
+      if (!nav) return;
+      nav.style.visibility = 'hidden';
+      void nav.getBoundingClientRect();
+      nav.style.visibility = '';
+    };
+    const frame = requestAnimationFrame(refresh);
+    const onShow = () => requestAnimationFrame(refresh);
+    window.addEventListener('pageshow', onShow);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('pageshow', onShow);
+    };
+  }, []);
 
   return (
     <nav
+      ref={navRef}
       aria-label="Navegación principal móvil"
       style={{
         position: 'fixed',
-        bottom: 'calc(-1 * var(--enka-standalone-bottom-gap, 0px))',
+        bottom: 0,
         left: 0,
         right: 0,
         width: '100%',
