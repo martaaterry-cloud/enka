@@ -7,7 +7,13 @@ import { suggestions } from '../features/more/SuggestedAgendaImport';
  * Existing cloud records are preserved. Invoked once per mounted authenticated provider;
  * repetitions are checked against user-owned rows, not a localStorage flag.
  */
-export async function initializePersonalAgenda(): Promise<void> {
+let bootstrapInFlight: Promise<void> | null = null;
+export function initializePersonalAgenda(): Promise<void> {
+  if (!bootstrapInFlight) bootstrapInFlight = runPersonalAgendaBootstrap().finally(() => { bootstrapInFlight = null; });
+  return bootstrapInFlight;
+}
+
+async function runPersonalAgendaBootstrap(): Promise<void> {
   const [catResponse, placeResponse, activityResponse] = await Promise.all([
     enkaRepository.fetchCategories(),
     enkaRepository.fetchLocations(),
