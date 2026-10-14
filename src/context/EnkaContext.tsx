@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Activity } from '../models/activity';
+import { convertCloudActivity, expandWeeklyRecurrences } from '../utils/cloudAgenda';
 import type { Category } from '../models/category';
 import { enkaRepository } from '../services/enka';
 import { useAuth } from './useAuth';
@@ -65,6 +66,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const { user } = useAuth();
+  const [cloudActivities, setCloudActivities] = useState<Activity[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<LocationItem[]>([]);
 
@@ -117,6 +119,46 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       window.removeEventListener('focus', load);
     };
   }, [user]);
+  useEffect(() => {
+    let cancelled = false;
+    const refreshCloud = async () => {
+      if (!user) { setCloudActivities([]); return; }
+      const [items, rules, slots, exceptions] = await Promise.all([
+        enkaRepository.fetchActivities(),
+        enkaRepository.fetchRecurrenceRules(),
+        enkaRepository.fetchRecurrenceSlots(),
+        enkaRepository.fetchOccurrenceExceptions()
+      ]);
+      if (cancelled) return;
+      if (items.error || rules.error || slots.error || exceptions.error) {
+        console.error('Error leyendo la agenda de Enka desde Supabase. Se conserva la copia local.');
+        return;
+      }
+      // Generated occurrences cover three months back and six months ahead.
+      const today = new Date();
+      const from = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+      const to = new Date(today.getFullYear(), today.getMonth() + 7, 0);
+      const iso = (date: Date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+      const existing = (items.data ?? []).map(convertCloudActivity).filter((a): a is Activity => a !== null);
+      const generated = expandWeeklyRecurrences(rules.data ?? [], slots.data ?? [], exceptions.data ?? [], iso(from), iso(to));
+      setCloudActivities([...existing, ...generated]);
+    };
+    void refreshCloud();
+    window.addEventListener('enka:data-changed', refreshCloud);
+    window.addEventListener('focus', refreshCloud);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('enka:data-changed', refreshCloud);
+      window.removeEventListener('focus', refreshCloud);
+    };
+  }, [user]);
+
+  // Keep the local device copy untouched; cloud records are a display overlay.
+  const displayedActivities = React.useMemo(() => {
+    const ids = new Set(activities.map(a => a.id));
+    return [...activities, ...cloudActivities.filter(a => !ids.has(a.id))];
+  }, [activities, cloudActivities]);
+
   const [gymSessions, setGymSessions] = useState<FlexibleGymSession[]>(INITIAL_GYM_SESSIONS);
   const [projects, setProjects] = useState<PlanningProject[]>(INITIAL_PROJECTS);
   const [weeklySummary, setWeeklySummary] = useState<WeeklyPlanningSummary>(INITIAL_WEEKLY_SUMMARY);
@@ -166,6 +208,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updates: Partial<Activity>,
     scope: 'this_occurrence' | 'following_occurrences' | 'all_occurrences' = 'this_occurrence'
   ) => {
+    if (cloudActivities.some(a => a.id === id)) return; // Cloud editing requires a synced mutation flow.
     const target = activities.find(a => a.id === id);
     if (!target) return;
 
@@ -382,7 +425,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getActivitiesForDate = (date: string) => {
-    return activities.filter(a => {
+    return displayedActivities.filter(a => {
       if (a.date === date) return true;
       if (a.isTrip && a.endDate && date >= a.date && date <= a.endDate) {
         return true;
@@ -401,7 +444,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCurrentTab,
         selectedDate,
         setSelectedDate,
-        activities,
+        activities: displayedActivities,
         categories,
         locations,
         gymSessions,
