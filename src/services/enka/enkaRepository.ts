@@ -258,6 +258,25 @@ export const enkaRepository = {
     }
   },
 
+  async updateActivity(id: string, updates: Partial<Omit<DbActivity, 'id' | 'user_id' | 'created_at' | 'updated_at'>>): Promise<RepositorySingleResult<DbActivity>> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+      const { data, error } = await supabase.from('enka_activities')
+        .update(updates).eq('id', id).eq('user_id', userId).select().single();
+      return error ? { data: null, error: new Error(error.message) } : { data: data as DbActivity, error: null };
+    } catch (error) { return { data: null, error: error instanceof Error ? error : new Error(String(error)) }; }
+  },
+
+  async deleteActivity(id: string): Promise<RepositoryMutationResult> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+      const { error } = await supabase.from('enka_activities').delete().eq('id', id).eq('user_id', userId);
+      return { success: !error, error: error ? new Error(error.message) : null };
+    } catch (error) { return { success: false, error: error instanceof Error ? error : new Error(String(error)) }; }
+  },
+
   async createRecurrenceRule(
     rule: Pick<DbRecurrenceRule, 'title' | 'frequency' | 'start_date'> &
       Partial<Omit<DbRecurrenceRule, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
