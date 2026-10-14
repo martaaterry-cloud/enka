@@ -235,6 +235,89 @@ export const enkaRepository = {
     }
   },
 
+
+  // ============================================================================
+  // AGENDA WRITES — authenticated, user-scoped, fail closed on errors.
+  // No automatic migration, deletion or replacement of local activity data.
+  // ============================================================================
+  async createActivity(
+    activity: Pick<DbActivity, 'title' | 'start_date'> &
+      Partial<Omit<DbActivity, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+  ): Promise<RepositorySingleResult<DbActivity>> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+      const { data, error } = await supabase.from('enka_activities')
+        .insert({ ...activity, user_id: userId })
+        .select().single();
+      return error
+        ? { data: null, error: new Error(error.message) }
+        : { data: data as DbActivity, error: null };
+    } catch (err: unknown) {
+      return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
+    }
+  },
+
+  async createRecurrenceRule(
+    rule: Pick<DbRecurrenceRule, 'title' | 'frequency' | 'start_date'> &
+      Partial<Omit<DbRecurrenceRule, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+  ): Promise<RepositorySingleResult<DbRecurrenceRule>> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+      const { data, error } = await supabase.from('enka_recurrence_rules')
+        .insert({ ...rule, user_id: userId })
+        .select().single();
+      return error
+        ? { data: null, error: new Error(error.message) }
+        : { data: data as DbRecurrenceRule, error: null };
+    } catch (err: unknown) {
+      return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
+    }
+  },
+
+  async createRecurrenceSlot(
+    slot: Pick<DbRecurrenceSlot, 'recurrence_rule_id' | 'weekday'> &
+      Partial<Omit<DbRecurrenceSlot, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+  ): Promise<RepositorySingleResult<DbRecurrenceSlot>> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+      // Guard against creating a slot for another user's rule.
+      const { data: owner, error: ownerError } = await supabase.from('enka_recurrence_rules')
+        .select('id').eq('id', slot.recurrence_rule_id).eq('user_id', userId).maybeSingle();
+      if (ownerError || !owner) return {
+        data: null, error: new Error(ownerError?.message || 'La rutina no pertenece al usuario.')
+      };
+      const { data, error } = await supabase.from('enka_recurrence_slots')
+        .insert({ ...slot, user_id: userId })
+        .select().single();
+      return error
+        ? { data: null, error: new Error(error.message) }
+        : { data: data as DbRecurrenceSlot, error: null };
+    } catch (err: unknown) {
+      return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
+    }
+  },
+
+  async createPlanningGoal(
+    goal: Pick<DbPlanningGoal, 'title' | 'period' | 'target_count'> &
+      Partial<Omit<DbPlanningGoal, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+  ): Promise<RepositorySingleResult<DbPlanningGoal>> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+      const { data, error } = await supabase.from('enka_planning_goals')
+        .insert({ ...goal, user_id: userId })
+        .select().single();
+      return error
+        ? { data: null, error: new Error(error.message) }
+        : { data: data as DbPlanningGoal, error: null };
+    } catch (err: unknown) {
+      return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
+    }
+  },
+
   // ============================================================================
   // OTHER READ-ONLY DOMAIN ENTITIES
   // ============================================================================
