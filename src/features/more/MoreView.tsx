@@ -8,6 +8,7 @@ import { enkaRepository } from '../../services/enka';
 import { CategoryManagementSection } from '../categories/CategoryManagementSection';
 import { LocationManagementSection } from '../locations/LocationManagementSection';
 import { RoutineManagementSection } from './RoutineManagementSection';
+import { SuggestedAgendaImport } from './SuggestedAgendaImport';
 
 type SectionId = 'menu' | 'lugares' | 'rutinas' | 'proyectos' | 'categorias';
 
@@ -325,6 +326,8 @@ export const MoreView: React.FC = () => {
               style={{ padding: '9px 12px', background: 'var(--bg-surface-subtle)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}
             >Copiar medidas de pantalla</button>
           </div>
+
+          <SuggestedAgendaImport />
 
           {/* Collapsible Advanced Diagnostics */}
           <div style={{ marginTop: '4px' }}>
