@@ -158,6 +158,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           }
           .mobile-nav-container {
             display: block !important;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 50;
+          }
+          .main-viewport-container {
+            padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom));
           }
         }
         @media (min-width: 840px) {
