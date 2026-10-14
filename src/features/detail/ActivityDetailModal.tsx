@@ -334,8 +334,9 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
               </div>
             )}
 
+            {activity.source === 'cloud' && <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', padding: 10, border: '1px solid var(--border-default)', borderRadius: 8 }}>Sincronizado desde Supabase · Solo lectura. La edición y las excepciones se habilitarán cuando estén conectadas con la nube.</p>}
             {/* Primary Action Buttons */}
-            <div
+            {activity.source !== 'cloud' && <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
@@ -411,7 +412,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                 <Icon name="Trash2" size={13} color="#EF4444" />
                 <span className="truncate">Eliminar</span>
               </button>
-            </div>
+            </div>}
           </div>
         )}
 
