@@ -25,6 +25,8 @@ export function convertCloudActivity(record: DbActivity): Activity | null {
     preparationMinutes: record.prep_before_minutes,
     isCancelled: record.status === 'cancelled',
     isTrip: Boolean(record.end_date && record.end_date !== record.start_date),
+    isSportMatch: record.title.toLowerCase().includes('bullense') && (record.title.toLowerCase().includes('partido') || record.title.toLowerCase().includes('balonmano senior')),
+    isHomeMatch: record.title.includes('(casa)') || record.notes?.includes('Partido en Bullas') || false,
     locationId: record.location_id ?? undefined,
     locationName: typeof details.location_name === 'string' ? details.location_name : undefined,
     createdAt: record.created_at,
