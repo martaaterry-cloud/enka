@@ -155,15 +155,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             display: flex !important;
           }
           .mobile-nav-container {
-            display: block !important;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            z-index: 50;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
+            display: contents !important;
           }
           .main-content-wrapper {
             padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 28px);
