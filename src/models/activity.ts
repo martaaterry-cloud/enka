@@ -11,6 +11,8 @@ export interface TravelTransition {
 }
 
 export interface Activity {
+  /** Cloud entries are read-only until editing and offline sync are implemented. */
+  source?: 'cloud' | 'local';
   id: string;
   title: string;
   categoryId: string;
