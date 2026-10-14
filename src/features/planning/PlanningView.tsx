@@ -2,6 +2,7 @@ import React from 'react';
 import { useEnka } from '../../context';
 import { Icon } from '../../components/ui/Icon';
 import { getWeekRange, formatLocalDateToISO, getTodayDateString } from '../../utils/dateUtils';
+import { getAlcantarillaWorkHoliday } from '../../utils/workHolidays';
 
 // Candidate slots only. Never infer that a blank local calendar means a free slot:
 // recurring work, English and handball are not yet expanded into activities here.
@@ -31,7 +32,7 @@ export const PlanningView: React.FC = () => {
       const to = Number(a.endTime.slice(0, 2)) * 60 + Number(a.endTime.slice(3));
       return start < to && end > from;
     });
-    return { ...item, date, overlapping, past: date < today };
+    return { ...item, date, overlapping, past: date < today, holiday: getAlcantarillaWorkHoliday(date) };
   });
 
   return (
@@ -47,7 +48,7 @@ export const PlanningView: React.FC = () => {
           Son propuestas para revisar, no reservas automáticas.
         </p>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          Atención: todavía faltan actividades recurrentes y eventos de Supabase en este calendario.
+          En los festivos laborales de Alcantarilla no se presupone trabajo. Todavía faltan actividades recurrentes y eventos de Supabase en este calendario.
           Estas sugerencias NO garantizan disponibilidad real ni recuperación suficiente.
         </p>
         {suggestions.map(item => {
@@ -56,6 +57,7 @@ export const PlanningView: React.FC = () => {
             <div>
               <strong style={{ fontSize: '0.8125rem' }}>{item.split} · {item.label}</strong>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{item.date} · {item.time} (orientativo)</div>
+              {item.holiday && <div style={{ fontSize: '0.72rem', fontWeight: 700 }}>Festivo laboral en Alcantarilla: {item.holiday}. No asumir jornada de trabajo.</div>}
               {(item.overlapping || item.past) && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{item.past ? 'Día pasado: puedes registrarlo igualmente' : 'Posible conflicto con tu agenda local'}</div>}
             </div>
             <button type="button" disabled={item.overlapping} aria-pressed={checked}
