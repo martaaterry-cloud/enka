@@ -7,6 +7,7 @@ import { Icon } from '../../components/ui/Icon';
 import { enkaRepository } from '../../services/enka';
 import { CategoryManagementSection } from '../categories/CategoryManagementSection';
 import { LocationManagementSection } from '../locations/LocationManagementSection';
+import { RoutineManagementSection } from './RoutineManagementSection';
 
 type SectionId = 'menu' | 'lugares' | 'rutinas' | 'proyectos' | 'categorias';
 
@@ -409,11 +410,7 @@ export const MoreView: React.FC = () => {
       {currentSection === 'lugares' && <LocationManagementSection />}
 
       {/* Rutinas: no predefined example schedules */}
-      {currentSection === 'rutinas' && (
-        <div style={{ padding: '14px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-          No hay rutinas configuradas. Las añadiremos cuando conectemos la planificación real.
-        </div>
-      )}
+      {currentSection === 'rutinas' && <RoutineManagementSection />}
 
       {/* Proyectos */}
       {currentSection === 'proyectos' && (
