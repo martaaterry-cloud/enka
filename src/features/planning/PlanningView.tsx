@@ -16,6 +16,7 @@ export const PlanningView: React.FC = () => {
   const { openCreateModal, activities } = useEnka();
   const weekInfo = React.useMemo(() => getWeekRange(), []);
   const [selected, setSelected] = React.useState<string[]>([]);
+  const [chosenDate, setChosenDate] = React.useState(getTodayDateString());
   const today = getTodayDateString();
 
   const suggestions = candidateDays.map(item => {
@@ -55,15 +56,22 @@ export const PlanningView: React.FC = () => {
             <div>
               <strong style={{ fontSize: '0.8125rem' }}>{item.split} · {item.label}</strong>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{item.date} · {item.time} (orientativo)</div>
-              {(item.overlapping || item.past) && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{item.past ? 'Día pasado' : 'Posible conflicto con tu agenda local'}</div>}
+              {(item.overlapping || item.past) && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{item.past ? 'Día pasado: puedes registrarlo igualmente' : 'Posible conflicto con tu agenda local'}</div>}
             </div>
-            <button type="button" disabled={item.past || item.overlapping} aria-pressed={checked}
+            <button type="button" disabled={item.overlapping} aria-pressed={checked}
               onClick={() => setSelected(prev => checked ? prev.filter(d => d !== item.date) : [...prev, item.date])}
-              style={{ padding: '8px 10px', borderRadius: 8, background: checked ? 'var(--text-primary)' : 'var(--bg-surface-subtle)', color: checked ? 'var(--text-inverse)' : 'var(--text-primary)', border: '1px solid var(--border-default)', opacity: item.past || item.overlapping ? 0.45 : 1 }}>
+              style={{ padding: '8px 10px', borderRadius: 8, background: checked ? 'var(--text-primary)' : 'var(--bg-surface-subtle)', color: checked ? 'var(--text-inverse)' : 'var(--text-primary)', border: '1px solid var(--border-default)', opacity: item.overlapping ? 0.45 : 1 }}>
               {checked ? 'Elegido' : 'Elegir'}
             </button>
           </div>;
         })}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <label htmlFor="gym-any-date" style={{ fontSize: '0.8rem', fontWeight: 700 }}>¿Entrenaste otro día? Regístralo igualmente</label>
+          <input id="gym-any-date" type="date" value={chosenDate} onChange={e => setChosenDate(e.target.value)}
+            style={{ border: '1px solid var(--border-default)', background: 'var(--bg-surface-subtle)', borderRadius: 8, padding: 10 }}/>
+          <button type="button" disabled={!chosenDate} onClick={() => openCreateModal(chosenDate)}
+            style={{ padding: 10, borderRadius: 8, border: '1px solid var(--border-default)' }}>Registrar entrenamiento de la fecha elegida</button>
+        </div>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
           Seleccionadas: {selected.length}/4. Para confirmar un entrenamiento, elige el día y crea
           la actividad verificando antes los demás compromisos y la hora exacta.
