@@ -38,6 +38,30 @@ const suggestions: Array<{
     start_time: '19:30', is_end_time_unknown: true, certainty: 'confirmed',
     status: 'scheduled', notes: 'Universidad de Alicante. Prever trayecto. No asistir al balonmano ese viernes.'
   }},
+  // League fixtures have confirmed weekends, not confirmed kickoff dates or times.
+  // Never choose a Saturday/Sunday or assign a kickoff time until the club confirms it.
+  ...([
+    ['2026-10-24','2026-10-25','AGU','casa'],
+    ['2026-11-07','2026-11-08','SLO','fuera'],
+    ['2026-11-21','2026-11-22','CIE','fuera'],
+    ['2026-11-28','2026-11-29','UCA','fuera'],
+    ['2026-12-12','2026-12-13','AGU','fuera'],
+    ['2027-01-30','2027-01-31','SLO','casa'],
+    ['2027-02-13','2027-02-14','CIE','casa'],
+    ['2027-02-20','2027-02-21','SLO','casa'],
+    ['2027-02-27','2027-02-28','CIE','fuera'],
+    ['2027-03-06','2027-03-07','UCA','fuera'],
+    ['2027-04-03','2027-04-04','AGU','casa']
+  ] as const).map(([start,end,opponent,where]) => ({
+    key: 'match-window-' + start,
+    name: start.slice(8) + '–' + end.slice(8) + '/' + start.slice(5,7) + ' · Bullense–' + opponent + ' · horario pendiente',
+    payload: {
+      title: 'Partido Bullense vs ' + opponent + ' (' + where + ', fecha/hora pendiente)',
+      start_date: start, end_date: end, is_all_day: true, is_time_pending: true,
+      certainty: 'pending', status: 'scheduled',
+      notes: 'La jornada es este fin de semana. Día y hora sin confirmar hasta la semana del partido. No bloquear todo el fin de semana. ' + (where === 'casa' ? 'Llegar al pabellón Juan Valera una hora antes.' : 'Prever desplazamiento y calentamiento al confirmarse.')
+    } as Pick<DbActivity, 'title' | 'start_date'> & Partial<Omit<DbActivity, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+  })),
   { key: 'birthday-20261201', name: '1 dic · Mi cumpleaños', payload: {
     title: 'Mi cumpleaños', start_date: '2026-12-01', is_all_day: true,
     certainty: 'confirmed', status: 'scheduled', notes: '1 de diciembre. Repetición anual pendiente de activar.'
@@ -74,7 +98,8 @@ export const SuggestedAgendaImport: React.FC = () => {
         known.push(result.data);
         added++;
       }
-      setMessage(`Guardadas: ${added}. Ya existentes (no duplicadas): ${skipped}. Se han guardado en Supabase; la vista Hoy/Calendario aún requiere sincronización.`);
+      window.dispatchEvent(new Event('enka:data-changed'));
+      setMessage(`Guardadas: ${added}. Ya existentes (no duplicadas): ${skipped}. Se han guardado en tu cuenta.`);
     } catch (e) {
       setError((e instanceof Error ? e.message : 'Error de conexión') +
         ' Comprueba tus actividades antes de reintentar; las ya guardadas no se borran.');
