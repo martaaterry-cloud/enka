@@ -3,7 +3,7 @@ import { enkaRepository } from '../../services/enka';
 import type { DbActivity } from '../../services/enka';
 
 // Reviewed together with the user. No database changes occur until they press Import.
-const suggestions: Array<{
+export const suggestions: Array<{
   key: string;
   name: string;
   payload: Pick<DbActivity, 'title' | 'start_date'> &
