@@ -37,6 +37,31 @@ document.addEventListener('visibilitychange', () => {
 });
 requestAnimationFrame(syncViewportHeight);
 
+
+// Collect only viewport geometry (no user data) to compare standalone startup
+// with the first downward gesture on iOS. Store locally for manual inspection.
+const captureViewport = (phase: string) => {
+  const nav = document.querySelector('nav[aria-label="Navegación principal móvil"]');
+  const rect = nav?.getBoundingClientRect();
+  const data = {
+    phase,
+    standalone: window.matchMedia('(display-mode: standalone)').matches,
+    iosStandalone: (navigator as Navigator & { standalone?: boolean }).standalone === true,
+    innerHeight: window.innerHeight,
+    clientHeight: document.documentElement.clientHeight,
+    scrollY: window.scrollY,
+    visualHeight: window.visualViewport?.height ?? null,
+    visualOffset: window.visualViewport?.offsetTop ?? null,
+    navBottom: rect?.bottom ?? null,
+    navGap: rect ? window.innerHeight - rect.bottom : null,
+  };
+  try { sessionStorage.setItem('enka:viewport:' + phase, JSON.stringify(data)); } catch { /* private mode */ }
+};
+window.addEventListener('load', () => requestAnimationFrame(() => captureViewport('open')));
+window.addEventListener('pageshow', () => requestAnimationFrame(() => captureViewport('resume')));
+document.addEventListener('touchstart', () => captureViewport('before-touch'), { passive: true, once: true });
+document.addEventListener('touchend', () => requestAnimationFrame(() => captureViewport('after-touch')), { passive: true, once: true });
+
 // The plugin resolves the worker URL relative to Vite's /enka/ base.
 // A root-relative /sw.js would point outside the GitHub Pages app.
 if (import.meta.env.PROD) {
