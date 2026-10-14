@@ -38,7 +38,7 @@ document.addEventListener('visibilitychange', () => {
 requestAnimationFrame(syncViewportHeight);
 
 
-// Align the initial iOS standalone viewport to the physical display, when iOS\n// reports a short layout viewport. Cap the compensation and keep browser mode unchanged.\nconst syncStandaloneBottomGap = () => {\n  const standalone = window.matchMedia('(display-mode: standalone)').matches &&\n    (navigator as Navigator & { standalone?: boolean }).standalone === true;\n  const gap = standalone ? Math.max(0, Math.min(100, window.screen.height - window.innerHeight)) : 0;\n  document.documentElement.style.setProperty('--enka-standalone-bottom-gap', `${Math.round(gap)}px`);\n};\nsyncStandaloneBottomGap();\nwindow.addEventListener('pageshow', syncStandaloneBottomGap);\nwindow.addEventListener('resize', syncStandaloneBottomGap);\nrequestAnimationFrame(syncStandaloneBottomGap);\n\n// Collect only viewport geometry (no user data) to compare standalone startup
+// Collect only viewport geometry (no user data) to compare standalone startup
 // with the first downward gesture on iOS. Store locally for manual inspection.
 const captureViewport = (phase: string) => {
   const nav = document.querySelector('nav[aria-label="Navegación principal móvil"]');
