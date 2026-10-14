@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Activity } from '../models/activity';
 import { convertCloudActivity, expandWeeklyRecurrences } from '../utils/cloudAgenda';
+import { initializePersonalAgenda } from '../services/agendaBootstrap';
 import type { Category } from '../models/category';
 import { enkaRepository } from '../services/enka';
 import { useAuth } from './useAuth';
@@ -66,6 +67,19 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const { user } = useAuth();
+  // User-scoped cloud setup: no service-role writes, no local data migration.
+  // Run once per authenticated account per application mount.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    void initializePersonalAgenda().then(() => {
+      if (!cancelled) window.dispatchEvent(new Event('enka:data-changed'));
+    }).catch(error => {
+      if (!cancelled) console.error('No se ha podido completar la agenda inicial:', error);
+    });
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
   const [cloudActivities, setCloudActivities] = useState<Activity[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<LocationItem[]>([]);
@@ -123,14 +137,16 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let cancelled = false;
     const refreshCloud = async () => {
       if (!user) { setCloudActivities([]); return; }
-      const [items, rules, slots, exceptions] = await Promise.all([
+      const [items, rules, slots, exceptions, categoryRows, placeRows] = await Promise.all([
         enkaRepository.fetchActivities(),
         enkaRepository.fetchRecurrenceRules(),
         enkaRepository.fetchRecurrenceSlots(),
-        enkaRepository.fetchOccurrenceExceptions()
+        enkaRepository.fetchOccurrenceExceptions(),
+        enkaRepository.fetchCategories(),
+        enkaRepository.fetchLocations()
       ]);
       if (cancelled) return;
-      if (items.error || rules.error || slots.error || exceptions.error) {
+      if (items.error || rules.error || slots.error || exceptions.error || categoryRows.error || placeRows.error) {
         console.error('Error leyendo la agenda de Enka desde Supabase. Se conserva la copia local.');
         return;
       }
@@ -141,7 +157,22 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const iso = (date: Date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
       const existing = (items.data ?? []).map(convertCloudActivity).filter((a): a is Activity => a !== null);
       const generated = expandWeeklyRecurrences(rules.data ?? [], slots.data ?? [], exceptions.data ?? [], iso(from), iso(to));
-      setCloudActivities([...existing, ...generated]);
+      const linkedCategories = categoryRows.data ?? [];
+      const linkedPlaces = placeRows.data ?? [];
+      const categoryOf = (title: string) => /Trabajo ·/i.test(title) ? 'Trabajo' :
+        /Inglés ·/i.test(title) ? 'Estudios' : /Balonmano ·/i.test(title) ? 'Balonmano' : '';
+      const placeOf = (title: string) => /Trabajo ·/i.test(title) ? 'Syte Automation' :
+        /Inglés ·/i.test(title) ? 'Academia Método' : /Balonmano ·/i.test(title) ? 'Pabellón Juan Valera' : '';
+      const decorated = generated.map(a => {
+        const category = linkedCategories.find(c => c.name === categoryOf(a.title));
+        const location = linkedPlaces.find(loc => loc.name === placeOf(a.title));
+        return { ...a, categoryId: category?.id ?? '', locationId: location?.id,
+          locationName: location?.name, locationCity: location?.city ?? undefined };
+      });
+      setCloudActivities([...existing.map(a => {
+        const loc = linkedPlaces.find(p => p.id === a.locationId);
+        return { ...a, locationName: loc?.name ?? a.locationName, locationCity: loc?.city ?? undefined };
+      }), ...decorated]);
     };
     void refreshCloud();
     window.addEventListener('enka:data-changed', refreshCloud);

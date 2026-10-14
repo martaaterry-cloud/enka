@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { enkaRepository } from '../../services/enka';
 
-const categoryTemplates = [
+export const categoryTemplates = [
   { name: 'Trabajo', color: '#3B82F6', icon_name: 'Briefcase' },
   { name: 'Estudios', color: '#8B5CF6', icon_name: 'BookOpen' },
   { name: 'Balonmano', color: '#F97316', icon_name: 'Trophy' },
@@ -10,7 +10,7 @@ const categoryTemplates = [
   { name: 'Personal', color: '#A855F7', icon_name: 'Heart' },
 ] as const;
 
-const locationTemplates = [
+export const locationTemplates = [
   { name: 'Syte Automation', address: 'Calle José María de Lara Carvajal 4B', city: 'Alcantarilla' },
   { name: 'Academia Método', address: 'Calle Rocío', city: 'Bullas' },
   { name: 'Pabellón Juan Valera', address: 'Calle Miguel Induráin 1', city: 'Bullas' },

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useEnka } from '../../context';
 import { ModalSheet } from '../../components/ui/ModalSheet';
+import { CloudActivityEditor } from './CloudActivityEditor';
 import type { Activity, CertaintyLevel } from '../../models/activity';
 import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
@@ -334,7 +335,8 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
               </div>
             )}
 
-            {activity.source === 'cloud' && <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', padding: 10, border: '1px solid var(--border-default)', borderRadius: 8 }}>Sincronizado desde Supabase · Solo lectura. La edición y las excepciones se habilitarán cuando estén conectadas con la nube.</p>}
+            {activity.source === 'cloud' && !activity.isRecurrent && <CloudActivityEditor activity={activity} onClose={onClose}/>}
+            {activity.source === 'cloud' && activity.isRecurrent && <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Rutina recurrente sincronizada. La edición de una sola repetición estará disponible próximamente.</p>}
             {/* Primary Action Buttons */}
             {activity.source !== 'cloud' && <div
               style={{
