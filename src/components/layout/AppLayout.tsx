@@ -25,8 +25,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         maxWidth: '100%',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'var(--bg-canvas)',
-        overflowX: 'hidden'
+        backgroundColor: 'var(--bg-canvas)'
       }}
     >
       <div style={{ display: 'flex', flex: 1, width: '100%', minWidth: 0, minHeight: 0 }}>
