@@ -157,7 +157,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             display: contents !important;
           }
           .main-content-wrapper {
-            padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 28px);
+            padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--enka-standalone-bottom-gap, 0px) + 28px);
           }
         }
         @media (min-width: 840px) {

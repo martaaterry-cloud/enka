@@ -25,7 +25,7 @@ export const MobileBottomNav: React.FC = () => {
       aria-label="Navegación principal móvil"
       style={{
         position: 'fixed',
-        bottom: 0,
+        bottom: 'calc(-1 * var(--enka-standalone-bottom-gap, 0px))',
         left: 0,
         right: 0,
         width: '100%',
