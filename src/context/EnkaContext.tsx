@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Activity } from '../models/activity';
 import { convertCloudActivity, expandWeeklyRecurrences } from '../utils/cloudAgenda';
+import { initializePersonalAgenda } from '../services/agendaBootstrap';
 import type { Category } from '../models/category';
 import { enkaRepository } from '../services/enka';
 import { useAuth } from './useAuth';
@@ -66,6 +67,19 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const { user } = useAuth();
+  // User-scoped cloud setup: no service-role writes, no local data migration.
+  // Run once per authenticated account per application mount.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    void initializePersonalAgenda().then(() => {
+      if (!cancelled) window.dispatchEvent(new Event('enka:data-changed'));
+    }).catch(error => {
+      if (!cancelled) console.error('No se ha podido completar la agenda inicial:', error);
+    });
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
   const [cloudActivities, setCloudActivities] = useState<Activity[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<LocationItem[]>([]);
