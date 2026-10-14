@@ -162,6 +162,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             right: 0;
             width: 100%;
             z-index: 50;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
           }
           .main-content-wrapper {
             padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 28px);
