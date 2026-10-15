@@ -8,6 +8,7 @@ const hhmm = (value: string | null | undefined) => value?.slice(0, 5) || undefin
 export function convertCloudActivity(record: DbActivity): Activity | null {
   if (!record.start_date) return null;
   const details = record.metadata ?? {};
+  const isFixture = Boolean(details.match_venue) || /bullense/i.test(record.title);
   return {
     id: record.id,
     title: record.title,
@@ -20,12 +21,13 @@ export function convertCloudActivity(record: DbActivity): Activity | null {
     isTimePending: record.is_time_pending,
     isEndTimeUnknown: record.is_end_time_unknown,
     certainty: record.certainty === 'pending' ? 'pending_time' : record.certainty as Activity['certainty'],
-    notes: record.notes ?? undefined,
+    notes: isFixture ? (record.start_time ? 'Llegar al pabellón 1 hora antes.' : 'Día y hora por confirmar') :
+      details.source?.startsWith('enka-') ? undefined : record.notes ?? undefined,
     timeNote: record.time_note ?? undefined,
     preparationMinutes: record.prep_before_minutes,
     isCancelled: record.status === 'cancelled',
     isTrip: Boolean(record.end_date && record.end_date !== record.start_date),
-    isSportMatch: Boolean(details.match_venue) || /bullense/i.test(record.title),
+    isSportMatch: isFixture,
     isHomeMatch: details.match_venue === 'home' || (!details.match_venue && (/\\(casa\\)/i.test(record.title) || record.notes?.includes('Partido en Bullas'))),
     opponent: typeof details.opponent === 'string' ? details.opponent : undefined,
     locationId: record.location_id ?? undefined,
