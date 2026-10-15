@@ -235,7 +235,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
 
             {isGraduationAbsenceDate && (
               <div style={{ padding: 12, borderRadius: 10, background: 'var(--bg-surface-subtle)', border: '1px solid var(--border-default)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <strong style={{ fontSize: '0.8125rem' }}>Balonmano · No asistiré ese día</strong>
+                <strong style={{ fontSize: '0.8125rem' }}>Balonmano · Ausencia prevista</strong>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                   La graduación coincide con el entrenamiento. Puedes confirmar la ausencia desde la sesión de balonmano, sin cancelar la rutina semanal.
                 </span>
