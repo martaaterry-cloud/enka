@@ -159,7 +159,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const generated = expandWeeklyRecurrences(rules.data ?? [], slots.data ?? [], exceptions.data ?? [], iso(from), iso(to));
       const linkedCategories = categoryRows.data ?? [];
       const linkedPlaces = placeRows.data ?? [];
-      const categoryOf = (title: string) => /Trabajo ·/i.test(title) ? 'Trabajo' :
+      const categoryOf = (title: string) => /Trabajo ·|Vuelta a Bullas/i.test(title) ? 'Trabajo' :
         /Inglés ·/i.test(title) ? 'Estudios' : /Balonmano ·/i.test(title) ? 'Balonmano' : '';
       const placeOf = (title: string) => /Trabajo ·/i.test(title) ? 'Syte Automation' :
         /Inglés ·/i.test(title) ? 'Academia Método' : /Balonmano ·/i.test(title) ? 'Pabellón Juan Valera' : '';
