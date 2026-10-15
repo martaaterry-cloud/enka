@@ -307,29 +307,6 @@ export const MoreView: React.FC = () => {
             )}
           </div>
 
-          {/* Local, privacy-safe iOS viewport diagnostics */}
-          <div style={{ padding: '12px 14px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <strong style={{ fontSize: '0.8125rem' }}>Diagnóstico de pantalla iPhone</strong>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-              Abre Enka, desliza hacia abajo una vez y después pulsa Copiar medidas.
-            </p>
-            <button
-              type="button"
-              onClick={async () => {
-                const phases = ['open', 'resume', 'before-touch', 'after-touch'];
-                const diagnostic = phases.map(phase => {
-                  try { return sessionStorage.getItem('enka:viewport:' + phase) || phase + ': sin datos'; }
-                  catch { return phase + ': no disponible'; }
-                }).join('\\n');
-                try { await navigator.clipboard.writeText('Enka ' + buildInfo.commit + '\\n' + diagnostic); }
-                catch { window.prompt('Copia estas medidas:', diagnostic); }
-              }}
-              style={{ padding: '9px 12px', background: 'var(--bg-surface-subtle)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}
-            >Copiar medidas de pantalla</button>
-          </div>
-
-
-
           {/* Collapsible Advanced Diagnostics */}
           <div style={{ marginTop: '4px' }}>
             <button
