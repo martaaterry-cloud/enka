@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { enkaRepository } from '../../services/enka';
 import type { DbPlanningGoal, DbRecurrenceRule } from '../../services/enka';
-import { WeeklyRoutineImport } from './WeeklyRoutineImport';
 
 type Kind = 'fixed' | 'flexible';
 const weekdays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -93,7 +92,6 @@ export const RoutineManagementSection: React.FC = () => {
           Fijas con horario o flexibles por sesiones semanales. Se guardan en tu cuenta.
         </p>
       </div>
-      <WeeklyRoutineImport />
       <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 14, borderRadius: 'var(--radius-md)', background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
         <label style={{ fontWeight: 700, fontSize: '0.8rem' }}>Tipo de rutina</label>
         <select style={fieldStyle} value={kind} onChange={e => setKind(e.target.value as Kind)}>
