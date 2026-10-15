@@ -44,18 +44,31 @@ async function runPersonalAgendaBootstrap(): Promise<void> {
     locations.push(created.data);
   }
   for (const item of suggestions) {
-    if (activities.some(a => a.metadata?.suggestion_key === item.key ||
-        (a.title === item.payload.title && a.start_date === item.payload.start_date))) continue;
+    const prior = activities.find(a => a.metadata?.suggestion_key === item.key ||
+        (a.title === item.payload.title && a.start_date === item.payload.start_date));
+    if (prior) {
+      // Update only known legacy match rows; keep user-edited title/time and other notes intact.
+      if (item.payload.metadata?.match_venue && !prior.metadata?.match_venue) {
+        const patched = await enkaRepository.updateActivity(prior.id, {
+          metadata: { ...prior.metadata, match_venue: item.payload.metadata.match_venue,
+            opponent: item.payload.metadata.opponent, kickoff_confirmed: item.payload.metadata.kickoff_confirmed,
+            weekend_start: item.payload.metadata.weekend_start,
+            weekend_end: item.payload.metadata.weekend_end }
+        });
+        if (patched.error) throw patched.error;
+      }
+      continue;
+    }
     const title = item.payload.title;
     const category = /partido|balonmano|bullense/i.test(title) ? 'Balonmano' :
       /láser|dentista/i.test(title) ? 'Salud' : /graduación/i.test(title) ? 'Estudios' : 'Personal';
     const place = /graduación/i.test(title) ? 'Universidad de Alicante' :
-      /partido|bullense/i.test(title) && !/fuera|fecha\/hora pendiente/i.test(title) ? 'Pabellón Juan Valera' : null;
+      /bullense/i.test(title) && (item.payload.metadata?.match_venue === 'home') ? 'Pabellón Juan Valera' : null;
     const created = await enkaRepository.createActivity({
       ...item.payload,
       category_id: categories.find(c => c.name === category)?.id ?? null,
       location_id: locations.find(loc => loc.name === place)?.id ?? null,
-      metadata: { suggestion_key: item.key, source: 'enka-personal-agenda' }
+      metadata: { ...item.payload.metadata, suggestion_key: item.key, source: 'enka-personal-agenda' }
     });
     if (created.error || !created.data) throw created.error || new Error('No se pudo guardar la cita');
     activities.push(created.data);

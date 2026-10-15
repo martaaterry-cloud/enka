@@ -8,6 +8,7 @@ const hhmm = (value: string | null | undefined) => value?.slice(0, 5) || undefin
 export function convertCloudActivity(record: DbActivity): Activity | null {
   if (!record.start_date) return null;
   const details = record.metadata ?? {};
+  const isFixture = Boolean(details.match_venue) || /bullense/i.test(record.title);
   return {
     id: record.id,
     title: record.title,
@@ -16,17 +17,19 @@ export function convertCloudActivity(record: DbActivity): Activity | null {
     endDate: record.end_date ?? undefined,
     startTime: hhmm(record.start_time),
     endTime: hhmm(record.end_time),
-    isAllDay: record.is_all_day,
+    isAllDay: record.is_all_day && !record.metadata?.weekend_start,
     isTimePending: record.is_time_pending,
     isEndTimeUnknown: record.is_end_time_unknown,
     certainty: record.certainty === 'pending' ? 'pending_time' : record.certainty as Activity['certainty'],
-    notes: record.notes ?? undefined,
+    notes: isFixture ? (record.start_time ? 'Llegar al pabellón 1 hora antes.' : 'Día y hora por confirmar') :
+      details.source?.startsWith('enka-') ? undefined : record.notes ?? undefined,
     timeNote: record.time_note ?? undefined,
     preparationMinutes: record.prep_before_minutes,
     isCancelled: record.status === 'cancelled',
     isTrip: Boolean(record.end_date && record.end_date !== record.start_date),
-    isSportMatch: record.title.toLowerCase().includes('bullense') && (record.title.toLowerCase().includes('partido') || record.title.toLowerCase().includes('balonmano senior')),
-    isHomeMatch: record.title.includes('(casa)') || record.notes?.includes('Partido en Bullas') || false,
+    isSportMatch: isFixture,
+    isHomeMatch: details.match_venue === 'home' || (!details.match_venue && (/\\(casa\\)/i.test(record.title) || record.notes?.includes('Partido en Bullas'))),
+    opponent: typeof details.opponent === 'string' ? details.opponent : undefined,
     locationId: record.location_id ?? undefined,
     locationName: typeof details.location_name === 'string' ? details.location_name : undefined,
     createdAt: record.created_at,
@@ -82,11 +85,21 @@ export function expandWeeklyRecurrences(
           isRecurrent: true,
           recurrenceSeriesId: rule.id,
           isOccurrenceException: Boolean(exception),
-          notes: exception?.reason ?? slot.notes ?? rule.notes ?? undefined,
+          notes: undefined, // logistics belong in the planner, not the visible event description
           locationId: exception?.override_location_id ?? slot.location_id ?? undefined,
           preparationMinutes: slot.prep_before_minutes,
           createdAt: rule.created_at,
           source: 'cloud'
+        });
+      }
+      // At the Bullas home base, work is followed by a commute, not immediate free time.
+      if (rule.title.startsWith('Trabajo · Syte Automation') && isoWeekday(day) <= 5 &&
+          matchingSlots.some(slot => slot.weekday === isoWeekday(day))) {
+        items.push({
+          id: 'cloud-commute:' + rule.id + ':' + date, title: 'Vuelta a Bullas',
+          categoryId: '', date, startTime: '15:00', endTime: '15:45',
+          certainty: 'probable', timeNote: 'Llegada habitual: 15:40–15:45',
+          notes: undefined, createdAt: rule.created_at, source: 'cloud'
         });
       }
     }
