@@ -29,16 +29,17 @@ export const CloudActivityEditor: React.FC<{activity: Activity; onClose: () => v
     } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo guardar'); }
     finally { setBusy(false); }
   };
-  return <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+  const fieldStyle: React.CSSProperties = { width: '100%', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', padding: 10, border: '1px solid var(--border-default)', borderRadius: 8, background: 'var(--bg-surface-subtle)', color: 'var(--text-primary)' };
+  return <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0, maxWidth: '100%' }}>
     <strong>Editar actividad</strong>
-    <label>Nombre<input value={title} onChange={e => setTitle(e.target.value)}/></label>
-    <label>Categoría<select value={categoryId} onChange={e => setCategoryId(e.target.value)}><option value="">Sin categoría</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-    <label>Ubicación<select value={locationId} onChange={e => setLocationId(e.target.value)}><option value="">Sin ubicación</option>{locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}</select></label>
-    <label>Fecha<input type="date" value={date} onChange={e => setDate(e.target.value)}/></label>
+    <label>Nombre<input style={fieldStyle} value={title} onChange={e => setTitle(e.target.value)}/></label>
+    <label>Categoría<select style={fieldStyle} value={categoryId} onChange={e => setCategoryId(e.target.value)}><option value="">Sin categoría</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+    <label>Ubicación<select style={fieldStyle} value={locationId} onChange={e => setLocationId(e.target.value)}><option value="">Sin ubicación</option>{locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}</select></label>
+    <label>Fecha<input style={fieldStyle} type="date" value={date} onChange={e => setDate(e.target.value)}/></label>
     <label><input type="checkbox" checked={pending} onChange={e => setPending(e.target.checked)}/> Día u hora pendiente de confirmar</label>
-    {!pending && <div><label>Inicio<input type="time" value={start} onChange={e => setStart(e.target.value)}/></label><label>Fin<input type="time" value={end} onChange={e => setEnd(e.target.value)}/></label></div>}
-    <label>Notas<textarea value={notes} onChange={e => setNotes(e.target.value)}/></label>
-    <button type="button" disabled={busy} onClick={() => void save()}>{busy ? 'Guardando…' : 'Guardar cambios'}</button>
+    {!pending && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, minWidth: 0 }}><label>Inicio<input style={fieldStyle} type="time" value={start} onChange={e => setStart(e.target.value)}/></label><label>Fin<input style={fieldStyle} type="time" value={end} onChange={e => setEnd(e.target.value)}/></label></div>}
+    <label>Notas<textarea style={fieldStyle} value={notes} onChange={e => setNotes(e.target.value)}/></label>
+    <button type="button" disabled={busy} onClick={() => void save()} style={{ padding: 12, background: "var(--text-primary)", color: "var(--text-inverse)", borderRadius: 8, position: "sticky", bottom: 0, zIndex: 1 }}>{busy ? 'Guardando…' : 'Guardar cambios'}</button>
     {error && <p role="alert" style={{ color: '#dc2626' }}>{error}</p>}
   </div>;
 };
