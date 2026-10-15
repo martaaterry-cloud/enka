@@ -319,6 +319,31 @@ export const enkaRepository = {
     }
   },
 
+  async saveOccurrenceException(input: {
+    recurrence_rule_id: string; recurrence_slot_id: string; original_date: string;
+    exception_type: 'rescheduled' | 'cancelled'; override_start_time?: string | null;
+    override_end_time?: string | null;
+  }): Promise<RepositoryMutationResult> {
+    try {
+      const supabase = getSupabase();
+      const userId = await getAuthenticatedUserId();
+      const { data: slot, error: slotError } = await supabase.from('enka_recurrence_slots')
+        .select('id').eq('id', input.recurrence_slot_id)
+        .eq('recurrence_rule_id', input.recurrence_rule_id).eq('user_id', userId).maybeSingle();
+      if (slotError || !slot) return { success: false, error: new Error(slotError?.message || 'Horario no encontrado.') };
+      const { error } = await supabase.from('enka_occurrence_exceptions').upsert({
+        user_id: userId, recurrence_rule_id: input.recurrence_rule_id,
+        recurrence_slot_id: input.recurrence_slot_id, original_date: input.original_date,
+        exception_type: input.exception_type,
+        override_start_time: input.exception_type === 'rescheduled' ? input.override_start_time : null,
+        override_end_time: input.exception_type === 'rescheduled' ? input.override_end_time : null
+      }, { onConflict: 'user_id,recurrence_rule_id,original_date,recurrence_slot_id' });
+      return { success: !error, error: error ? new Error(error.message) : null };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
+    }
+  },
+
   async createPlanningGoal(
     goal: Pick<DbPlanningGoal, 'title' | 'period' | 'target_count'> &
       Partial<Omit<DbPlanningGoal, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
