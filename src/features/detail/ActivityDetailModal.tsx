@@ -23,6 +23,8 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
   const {
     categories,
     locations,
+    activities,
+    openDetailModal,
     updateActivity,
     cancelActivity,
     deleteActivity
@@ -53,6 +55,12 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
 
   const currentCategory = categories.find((c: Category) => c.id === activity.categoryId);
   const isRecurrent = Boolean(activity.isRecurrent);
+  const isGraduation = /graduaci[oó]n/i.test(activity.title);
+  const isGraduationAbsenceDate = isGraduation && (activity.date === '2026-11-13' || activity.date === '2026-11-27');
+  const conflictingHandball = isGraduationAbsenceDate
+    ? activities.find(a => a.id !== activity.id && a.date === activity.date &&
+        /balonmano/i.test(a.title) && a.isRecurrent && !a.isCancelled)
+    : undefined;
   const formattedDate = formatSpanishDateHeader(activity.date);
   const relativeLabel = getRelativeDayLabel(activity.date);
 
@@ -225,7 +233,20 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
               </div>
             </div>
 
-            {/* Overlap Callout if exists */}
+            {isGraduationAbsenceDate && (
+              <div style={{ padding: 12, borderRadius: 10, background: 'var(--bg-surface-subtle)', border: '1px solid var(--border-default)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <strong style={{ fontSize: '0.8125rem' }}>Balonmano · Ausencia prevista</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  La graduación coincide con el entrenamiento. Puedes confirmar la ausencia desde la sesión de balonmano, sin cancelar la rutina semanal.
+                </span>
+                {conflictingHandball && <button type="button" onClick={() => openDetailModal(conflictingHandball)}
+                  style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-default)', alignSelf: 'flex-start' }}>
+                  Gestionar ese entrenamiento
+                </button>}
+                {!conflictingHandball && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>El entrenamiento no figura como pendiente en tu agenda.</span>}
+              </div>
+            )}
+                        {/* Overlap Callout if exists */}
             {activity.knownOverlap?.accepted && (
               <OverlapCallout
                 withActivityTitle={activity.knownOverlap.withActivityTitle}

@@ -72,8 +72,7 @@ export function expandWeeklyRecurrences(
         const exception = exceptions.find(e => e.recurrence_rule_id === rule.id &&
           e.original_date === date && (!e.recurrence_slot_id || e.recurrence_slot_id === slot.id));
         if (exception && /cancel|skip|omit/i.test(exception.exception_type)) continue;
-        // The user confirmed that both November graduation Fridays supersede handball.
-        if (rule.title.startsWith('Balonmano') && (date === '2026-11-13' || date === '2026-11-27')) continue;
+
         items.push({
           id: 'cloud-recurring:' + rule.id + ':' + slot.id + ':' + date,
           title: rule.title,
@@ -92,16 +91,7 @@ export function expandWeeklyRecurrences(
           source: 'cloud'
         });
       }
-      // At the Bullas home base, work is followed by a commute, not immediate free time.
-      if (rule.title.startsWith('Trabajo · Syte Automation') && isoWeekday(day) <= 5 &&
-          matchingSlots.some(slot => slot.weekday === isoWeekday(day))) {
-        items.push({
-          id: 'cloud-commute:' + rule.id + ':' + date, title: 'Vuelta a Bullas',
-          categoryId: '', date, startTime: '15:00', endTime: '15:45',
-          certainty: 'probable', timeNote: 'Llegada habitual: 15:40–15:45',
-          notes: undefined, createdAt: rule.created_at, source: 'cloud'
-        });
-      }
+
     }
   }
   return items;
