@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useEnka } from '../../context';
 import { ModalSheet } from '../../components/ui/ModalSheet';
 import { CloudActivityEditor } from './CloudActivityEditor';
+import { RecurringOccurrenceEditor } from './RecurringOccurrenceEditor';
 import type { Activity, CertaintyLevel } from '../../models/activity';
 import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
@@ -336,7 +337,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             )}
 
             {activity.source === 'cloud' && !activity.isRecurrent && <CloudActivityEditor activity={activity} onClose={onClose}/>}
-            {activity.source === 'cloud' && activity.isRecurrent && <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Rutina recurrente sincronizada. La edición de una sola repetición estará disponible próximamente.</p>}
+            {activity.source === 'cloud' && activity.isRecurrent && <RecurringOccurrenceEditor activity={activity} onClose={onClose} />}
             {/* Primary Action Buttons */}
             {activity.source !== 'cloud' && <div
               style={{
