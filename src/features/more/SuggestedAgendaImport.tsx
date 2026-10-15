@@ -18,10 +18,10 @@ export const suggestions: Array<{
     certainty: 'confirmed', status: 'scheduled', notes: 'Duración aproximada: 1 hora.'
   }},
   { key: 'ucam-bullense-20261017', name: '17 oct · Partido Bullense–UCAM · 17:50', payload: {
-    title: 'Balonmano senior femenino: Bullense - UCAM',
+    title: 'Bullense – UCAM',
     start_date: '2026-10-17', start_time: '17:50', is_end_time_unknown: true,
     certainty: 'confirmed', status: 'scheduled', prep_before_minutes: 60,
-    notes: 'Partido en Bullas. Estar en el pabellón a las 16:50. Desde casa en Bullas, unos 3 minutos andando. Hora de finalización pendiente.'
+    notes: 'Pabellón Juan Valera. Llegada al pabellón: 16:50.', metadata: { match_venue: 'home', opponent: 'UCA', kickoff_confirmed: true }
   }},
   { key: 'partner-graduation-20261113', name: '13 nov · Graduación de tu pareja · 20:00', payload: {
     title: 'Graduación de mi pareja (UA)', start_date: '2026-11-13',
@@ -56,10 +56,10 @@ export const suggestions: Array<{
     key: 'match-window-' + start,
     name: start.slice(8) + '–' + end.slice(8) + '/' + start.slice(5,7) + ' · Bullense–' + opponent + ' · horario pendiente',
     payload: {
-      title: 'Partido Bullense vs ' + opponent + ' (' + where + ', fecha/hora pendiente)',
-      start_date: start, end_date: end, is_all_day: true, is_time_pending: true,
+      title: 'Bullense – ' + opponent + (where === 'casa' ? ' · Casa' : ' · Fuera'),
+      start_date: start, end_date: end, is_all_day: false, is_date_pending: true, is_time_pending: true,
       certainty: 'pending', status: 'scheduled',
-      notes: 'La jornada es este fin de semana. Día y hora sin confirmar hasta la semana del partido. No bloquear todo el fin de semana. ' + (where === 'casa' ? 'Llegar al pabellón Juan Valera una hora antes.' : 'Prever desplazamiento y calentamiento al confirmarse.')
+      notes: 'Fin de semana de partido · día y hora por confirmar.', metadata: { match_venue: where === 'casa' ? 'home' : 'away', opponent, kickoff_confirmed: false, weekend_start: start, weekend_end: end }
     } as Pick<DbActivity, 'title' | 'start_date'> & Partial<Omit<DbActivity, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
   })),
   { key: 'birthday-20261201', name: '1 dic · Mi cumpleaños', payload: {
@@ -85,11 +85,11 @@ export const SuggestedAgendaImport: React.FC = () => {
       if (categoryResult.error || locationResult.error || !categoryResult.data || !locationResult.data)
         throw categoryResult.error || locationResult.error || new Error('No se pudieron comprobar categorías y lugares.');
       const categoryFor = (title: string) =>
-        /balonmano|partido|ucam/i.test(title) ? 'Balonmano' :
+        /bullense|balonmano|partido|ucam/i.test(title) ? 'Balonmano' :
         /láser|dentista/i.test(title) ? 'Salud' :
         /graduación/i.test(title) ? 'Estudios' : 'Personal';
       const locationFor = (title: string) =>
-        /bullense|ucam/i.test(title) && !/fuera|pendiente/i.test(title) ? 'Pabellón Juan Valera' :
+        /bullense|ucam/i.test(title) && !/fuera/i.test(title) ? 'Pabellón Juan Valera' :
         /graduación/i.test(title) ? 'Universidad de Alicante' : null;
       const existing = await enkaRepository.fetchActivities();
       if (existing.error || !existing.data) throw existing.error || new Error('No se pudieron comprobar los registros existentes.');
@@ -106,7 +106,7 @@ export const SuggestedAgendaImport: React.FC = () => {
           ...suggestion.payload,
           category_id: categoryResult.data.find(c => c.name === categoryFor(suggestion.payload.title))?.id ?? null,
           location_id: locationResult.data.find(l => l.name === locationFor(suggestion.payload.title))?.id ?? null,
-          metadata: { suggestion_key: suggestion.key, source: 'enka-reviewed-agenda-20261014' }
+          metadata: { ...suggestion.payload.metadata, suggestion_key: suggestion.key, source: 'enka-reviewed-agenda-20261014' }
         });
         if (result.error || !result.data) throw result.error || new Error('No se pudo guardar.');
         known.push(result.data);
