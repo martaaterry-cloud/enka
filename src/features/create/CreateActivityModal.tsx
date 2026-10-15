@@ -4,6 +4,7 @@ import { ModalSheet } from '../../components/ui/ModalSheet';
 import type { CertaintyLevel } from '../../models/activity';
 import { Icon } from '../../components/ui/Icon';
 import { getTodayDateString } from '../../utils/dateUtils';
+import { enkaRepository } from '../../services/enka';
 
 interface ActivityFormProps {
   initialDate: string;
@@ -11,10 +12,12 @@ interface ActivityFormProps {
 }
 
 const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => {
-  const { addActivity, categories, locations } = useEnka();
+  const { categories, locations } = useEnka();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const [title, setTitle] = useState('');
-  const [categoryId, setCategoryId] = useState(categories[0]?.id || 'trabajo');
+  const [categoryId, setCategoryId] = useState(categories[0]?.id || '');
   const [date, setDate] = useState(initialDate || getTodayDateString());
   const [isAllDay, setIsAllDay] = useState(false);
   const [isTimePending, setIsTimePending] = useState(false);
@@ -25,29 +28,30 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
   const [certainty, setCertainty] = useState<CertaintyLevel>('confirmed');
   const [notes, setNotes] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
-
-    const loc = locations.find(l => l.id === selectedLocationId);
-
-    addActivity({
-      title: title.trim(),
-      categoryId,
-      date,
-      startTime: isAllDay || isTimePending ? undefined : startTime,
-      endTime: isAllDay || isTimePending ? undefined : endTime,
-      isAllDay,
-      isTimePending,
-      locationId: loc?.id,
-      locationName: loc?.name || customLocationName || undefined,
-      locationCity: loc?.city || 'Bullas',
-      travelBeforeMinutes: loc?.defaultTravelFromHomeMinutes || 0,
-      certainty,
-      notes: notes.trim() || undefined
-    });
-
-    onClose();
+    if (!title.trim() || saving) return;
+    setSaving(true);
+    setError('');
+    try {
+      if (!isAllDay && !isTimePending && endTime <= startTime) throw new Error('La hora de fin debe ser posterior al inicio.');
+      if (customLocationName.trim() && !selectedLocationId) throw new Error('Selecciona un lugar guardado. Puedes añadir nuevos lugares desde Más → Lugares.');
+      const result = await enkaRepository.createActivity({
+        title: title.trim(), start_date: date,
+        category_id: categoryId || null, location_id: selectedLocationId || null,
+        start_time: isAllDay || isTimePending ? null : startTime,
+        end_time: isAllDay || isTimePending ? null : endTime,
+        is_all_day: isAllDay, is_time_pending: isTimePending,
+        certainty, status: 'scheduled', notes: notes.trim() || null
+      });
+      if (result.error) throw result.error;
+      window.dispatchEvent(new Event('enka:data-changed'));
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo guardar en la nube.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const certaintyOptions: { value: CertaintyLevel; label: string; icon: string }[] = [
@@ -330,8 +334,9 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
         />
       </div>
 
+      {error && <p role="alert" style={{ color: '#dc2626', fontSize: '0.8rem' }}>{error}</p>}
       {/* Submit Actions */}
-      <div style={{ display: 'flex', gap: '8px', marginTop: '6px', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
+      <div style={{ display: 'flex', gap: '8px', marginTop: '6px', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)', position: 'sticky', bottom: 0, background: 'var(--bg-surface)', zIndex: 2 }}>
         <button
           type="button"
           onClick={onClose}
@@ -350,6 +355,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
         </button>
         <button
           type="submit"
+          disabled={saving}
           style={{
             flex: 2,
             padding: '9px',
@@ -362,7 +368,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ initialDate, onClose }) => 
             boxShadow: 'var(--shadow-sm)'
           }}
         >
-          Guardar Actividad
+          {saving ? 'Guardando…' : 'Guardar en la nube'}
         </button>
       </div>
     </form>

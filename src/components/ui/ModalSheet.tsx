@@ -239,8 +239,18 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
           overscroll-behavior: contain;
-          flex: 1;
+          flex: 1 1 auto;
+          min-height: 0;
           min-width: 0;
+          overflow-x: hidden;
+        }
+
+        .container-form .modal-body input,
+        .container-form .modal-body select,
+        .container-form .modal-body textarea {
+          max-width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
         }
 
         .container-form .modal-footer {
@@ -250,6 +260,10 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
           flex-shrink: 0;
           z-index: 10;
         }
+
+        .modal-container, .modal-container * { box-sizing: border-box; }
+        .modal-container { min-width: 0; }
+        .modal-body > * { min-width: 0; max-width: 100%; }
 
         /* Common header elements */
         .modal-header-info {
