@@ -79,6 +79,8 @@ export function expandWeeklyRecurrences(
           rule.title.startsWith('Balonmano') &&
           (date === '2026-11-13' || date === '2026-11-27');
 
+        if (graduationAbsence) continue;
+
         items.push({
           id: 'cloud-recurring:' + rule.id + ':' + slot.id + ':' + date,
           title: rule.title,
@@ -87,8 +89,6 @@ export function expandWeeklyRecurrences(
           startTime: hhmm(exception?.override_start_time ?? slot.start_time),
           endTime: hhmm(exception?.override_end_time ?? slot.end_time),
           certainty: 'confirmed',
-          isCancelled: graduationAbsence,
-          cancellationReason: graduationAbsence ? 'No asistiré: graduación' : undefined,
           isRecurrent: true,
           recurrenceSeriesId: rule.id,
           isOccurrenceException: Boolean(exception),
