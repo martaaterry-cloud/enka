@@ -27,6 +27,7 @@ export const PlanningView: React.FC = () => {
   const [start, setStart] = React.useState('17:30');
   const [end, setEnd] = React.useState('19:00');
   const [locationId, setLocationId] = React.useState('');
+  const [showDetails, setShowDetails] = React.useState(false);
   const monday = formatLocalDateToISO(week);
   const sunday = formatLocalDateToISO(new Date(week.getFullYear(), week.getMonth(), week.getDate() + 6));
   const gymCategory = categories.find(c => c.name.toLocaleLowerCase('es') === 'gimnasio')?.id;
@@ -54,10 +55,36 @@ export const PlanningView: React.FC = () => {
     if (a.isAllDay || a.isTimePending || !a.startTime || !a.endTime) return true;
     return toMinutes(start) < toMinutes(a.endTime) && toMinutes(a.startTime) < toMinutes(end);
   });
-  const suggestions = suggestGymSlots(week, activities, rows, split, goal?.id, gymCategory);
+  const suggestions = suggestGymSlots(week, activities, rows, nextSplit, goal?.id, gymCategory);
   const refresh = async () => {
     await load();
     window.dispatchEvent(new Event('enka:data-changed'));
+  };
+  const quickSave = async (targetSplit: Split, when: string, from?: string, to?: string, done = false) => {
+    setError('');
+    if (!goal) { setError('Todavía no se ha cargado el objetivo del gimnasio.'); return; }
+    const duplicate = rows.find(a => a.start_date === when && a.status !== 'cancelled' &&
+      (a.metadata?.gym_split === targetSplit || a.title.trim().toLowerCase() === targetSplit.toLowerCase()));
+    setSaving(true);
+    try {
+      if (duplicate) {
+        if (!done || duplicate.status === 'completed') { setError('Esta sesión ya está guardada para ese día.'); return; }
+        const updated = await enkaRepository.updateActivity(duplicate.id, {
+          status: 'completed', planning_goal_id: goal.id
+        });
+        if (updated.error) throw updated.error;
+      } else {
+        const created = await enkaRepository.createActivity({
+          title: targetSplit, planning_goal_id: goal.id, category_id: gymCategory ?? null,
+          start_date: when, start_time: from ?? null, end_time: to ?? null,
+          is_time_pending: !from, certainty: from ? 'confirmed' : 'pending',
+          status: done ? 'completed' : 'scheduled', metadata: { gym_split: targetSplit, gym_source: 'quick_action' }
+        });
+        if (created.error) throw created.error;
+      }
+      await refresh();
+    } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo guardar'); }
+    finally { setSaving(false); }
   };
   const schedule = async (markCompleted: boolean) => {
     setError('');
@@ -92,6 +119,7 @@ export const PlanningView: React.FC = () => {
     } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo actualizar'); }
     finally { setSaving(false); }
   };
+  const nextSplit = splits.find(s => !gymRows.some(a => a.title.trim().toLowerCase() === s.toLowerCase() || a.metadata?.gym_split === s)) ?? splits[0];
   return <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
     <div>
       <h1 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Mi gimnasio</h1>
@@ -127,23 +155,36 @@ export const PlanningView: React.FC = () => {
       })}
     </section>
     <section style={{ padding: 14, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 12, display: 'grid', gap: 10 }}>
-      <strong>Huecos para {split}</strong>
+      <strong>Registrar entrenamiento en un toque</strong>
+      <label style={{ fontSize: '0.8rem' }}>¿Qué has entrenado?
+        <select style={inputStyle} value={split} onChange={e => setSplit(e.target.value as Split)}>
+          {splits.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+      </label>
+      <button type="button" disabled={saving || loading || !goal} onClick={() => void quickSave(split, getTodayDateString(), undefined, undefined, true)}
+        style={{ padding: 12, borderRadius: 9, background: 'var(--text-primary)', color: 'var(--text-inverse)', fontWeight: 700 }}>
+        He entrenado hoy
+      </button>
+      <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>No hace falta introducir horas. Si ya estaba programado hoy, lo marcamos como realizado.</span>
+    </section>
+    <section style={{ padding: 14, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 12, display: 'grid', gap: 10 }}>
+      <strong>Propuestas para {nextSplit}</strong>
       <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
         Propuestas según tus compromisos conocidos. Comprueba el desplazamiento, la comida y tu descanso antes de confirmar.
       </p>
       {suggestions.length === 0 && <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
         No hay huecos claros esta semana. Puedes elegir manualmente otra fecha u hora.
       </p>}
-      {suggestions.map(item => <button type="button" key={item.date + item.start} onClick={() => {
-        setDate(item.date); setStart(item.start); setEnd(item.end);
-      }} style={{ textAlign: 'left', padding: 10, border: '1px solid var(--border-default)',
+      {suggestions.map(item => <button type="button" disabled={saving || loading || !goal} key={item.date + item.start} onClick={() => void quickSave(nextSplit, item.date, item.start, item.end)} style={{ textAlign: 'left', padding: 10, border: '1px solid var(--border-default)',
         borderRadius: 9, background: date === item.date && start === item.start ? 'var(--bg-surface-elevated)' : 'var(--bg-surface-subtle)' }}>
         <strong style={{ fontSize: '0.82rem' }}>{item.label} · {item.start}–{item.end}</strong>
         <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{item.reason}</div>
       </button>)}
     </section>
     <section style={{ padding: 14, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 12, display: 'grid', gap: 10 }}>
-      <strong>Programar o registrar entrenamiento</strong>
+      <button type="button" aria-expanded={showDetails} onClick={() => setShowDetails(v => !v)} style={{ fontWeight: 700, textAlign: 'left', padding: 8 }}>⚙ {showDetails ? 'Ocultar opciones avanzadas' : 'Cambiar fecha, hora o lugar'}</button>
+      {showDetails && <>
+      <strong>Opciones avanzadas</strong>
       <label style={{ fontSize: '0.8rem' }}>Sesión<select style={inputStyle} value={split} onChange={e => setSplit(e.target.value as Split)}>
         {splits.map(s => <option key={s} value={s}>{s}</option>)}</select></label>
       <label style={{ fontSize: '0.8rem' }}>Día (puede ser anterior)<input type="date" style={inputStyle} value={date} onChange={e => setDate(e.target.value)}/></label>
@@ -164,7 +205,8 @@ export const PlanningView: React.FC = () => {
           Ya lo hice
         </button>
       </div>
-      {error && <p role="alert" style={{ fontSize: '0.8rem', color: '#dc2626' }}>{error}</p>}
+      </>}
     </section>
+    {error && <p role="alert" style={{ fontSize: '0.8rem', color: '#dc2626' }}>{error}</p>}
   </div>;
 };
