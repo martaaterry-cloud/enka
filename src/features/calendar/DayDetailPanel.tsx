@@ -6,6 +6,7 @@ import { Icon } from '../../components/ui/Icon';
 import { CertaintyIndicator } from '../../components/ui/CertaintyIndicator';
 import { OverlapCallout } from '../../components/ui/OverlapCallout';
 import { formatSpanishDateHeader } from '../../utils/dateUtils';
+import { findAgendaConflicts } from '../detail/ConflictDecision';
 
 interface DayDetailPanelProps {
   date: string;
@@ -24,6 +25,8 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
   const categoryMap = React.useMemo(() => {
     return new Map(categories.map(c => [c.id, c]));
   }, [categories]);
+
+  const conflictCount = React.useMemo(() => activities.filter(a => findAgendaConflicts(a, activities).length > 0).length, [activities]);
 
   const formattedDate = React.useMemo(() => {
     return formatSpanishDateHeader(date);
@@ -76,6 +79,14 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
         </button>
       </div>
 
+      {conflictCount > 0 && (
+        <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px',
+          borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)',
+          backgroundColor: 'var(--bg-surface-subtle)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+          <Icon name="AlertCircle" size={15} />
+          <span><strong>{Math.ceil(conflictCount / 2)} posible(s) coincidencia(s).</strong> Abre una actividad para decidir qué hacer.</span>
+        </div>
+      )}
       {/* Activities list */}
       {activities.length === 0 ? (
         <div
@@ -187,6 +198,9 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
                   </div>
                 )}
 
+                {findAgendaConflicts(act, activities).length > 0 && (
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)' }}><Icon name="AlertCircle" size={12}/> Coincide con otra actividad · Toca para resolver</div>
+                )}
                 {act.knownOverlap?.accepted && (
                   <OverlapCallout planNote={act.knownOverlap.planNote} />
                 )}
