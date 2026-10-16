@@ -26,6 +26,7 @@ export function convertCloudActivity(record: DbActivity): Activity | null {
     timeNote: record.time_note ?? undefined,
     preparationMinutes: record.prep_before_minutes,
     isCancelled: record.status === 'cancelled',
+    knownOverlap: details.conflict_decision === 'attend_both' ? { withActivityTitle: 'Otra actividad', accepted: true, planNote: 'Solapamiento aceptado' } : undefined,
     isTrip: Boolean(record.end_date && record.end_date !== record.start_date),
     isSportMatch: isFixture,
     isHomeMatch: details.match_venue === 'home' || (!details.match_venue && (/\\(casa\\)/i.test(record.title) || record.notes?.includes('Partido en Bullas'))),
@@ -92,6 +93,7 @@ export function expandWeeklyRecurrences(
           isRecurrent: true,
           recurrenceSeriesId: rule.id,
           isOccurrenceException: Boolean(exception),
+          knownOverlap: exception?.exception_type === 'overlap_accepted' ? { withActivityTitle: 'Otra actividad', accepted: true, planNote: 'Solapamiento aceptado' } : undefined,
           notes: undefined, // logistics belong in the planner, not the visible event description
           locationId: exception?.override_location_id ?? slot.location_id ?? undefined,
           preparationMinutes: slot.prep_before_minutes,
