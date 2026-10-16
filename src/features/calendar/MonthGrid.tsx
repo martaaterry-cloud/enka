@@ -65,6 +65,8 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
   const activitiesByDate = React.useMemo(() => {
     const map = new Map<string, Activity[]>();
     activities.forEach(act => {
+      // Work remains available in daily views and planning, but does not clutter month dots.
+      if (act.title.startsWith('Trabajo · Syte Automation')) return;
       const list = map.get(act.date) || [];
       list.push(act);
       map.set(act.date, list);
