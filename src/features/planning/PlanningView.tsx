@@ -47,11 +47,12 @@ export const PlanningView: React.FC = () => {
   const planned = gymRows.filter(a => a.status !== 'completed');
   const target = goal?.target_count ?? 4;
   const times = (a: DbActivity) => a.start_time?.slice(0, 5) ?? 'Sin hora';
-  const conflicts = activities.filter(a => a.date === date && !a.isCancelled && (
-    a.isAllDay || a.isTimePending || (!a.startTime || !a.endTime) ||
-    (Number(start.slice(0, 2)) * 60 + Number(start.slice(3)) < Number(a.endTime.slice(0, 2)) * 60 + Number(a.endTime.slice(3)) &&
-    Number(a.startTime.slice(0, 2)) * 60 + Number(a.startTime.slice(3)) < Number(end.slice(0, 2)) * 60 + Number(end.slice(3))))
-  )).filter(a => !(a.isRecurrent === false && /gimnasio/i.test(a.title)));
+  const toMinutes = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5));
+  const conflicts = activities.filter(a => {
+    if (a.date !== date || a.isCancelled) return false;
+    if (a.isAllDay || a.isTimePending || !a.startTime || !a.endTime) return true;
+    return toMinutes(start) < toMinutes(a.endTime) && toMinutes(a.startTime) < toMinutes(end);
+  });
   const refresh = async () => {
     await load();
     window.dispatchEvent(new Event('enka:data-changed'));
