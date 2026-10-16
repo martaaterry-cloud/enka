@@ -6,7 +6,7 @@ import { DayDetailPanel } from './DayDetailPanel';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { Icon } from '../../components/ui/Icon';
 
-import { getTodayDateString, parseLocalDate } from '../../utils/dateUtils';
+import { formatLocalDateToISO, getTodayDateString, parseLocalDate } from '../../utils/dateUtils';
 
 export const CalendarView: React.FC = () => {
   const { activities, categories, selectedDate, setSelectedDate, openCreateModal, getActivitiesForDate } = useEnka();
@@ -22,25 +22,41 @@ export const CalendarView: React.FC = () => {
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
 
-  const handlePrevMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(y => y - 1);
-    } else {
-      setCurrentMonth(m => m - 1);
-    }
-  };
-
-  const handleNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(y => y + 1);
-    } else {
-      setCurrentMonth(m => m + 1);
-    }
-  };
-
   const selectedDayActivities = getActivitiesForDate(selectedDate);
+  const weekStart = React.useMemo(() => {
+    const day = parseLocalDate(selectedDate);
+    day.setDate(day.getDate() - ((day.getDay() + 6) % 7));
+    return day;
+  }, [selectedDate]);
+  const weekEnd = React.useMemo(() => new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6), [weekStart]);
+  const weekLabel = weekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + ' – ' +
+    weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  const navigate = (offset: number) => {
+    if (viewMode === 'month') {
+      const newMonth = new Date(currentYear, currentMonth + offset, 1);
+      setCurrentMonth(newMonth.getMonth());
+      setCurrentYear(newMonth.getFullYear());
+    } else {
+      const chosen = parseLocalDate(selectedDate);
+      chosen.setDate(chosen.getDate() + offset * 7);
+      setSelectedDate(formatLocalDateToISO(chosen));
+      setCurrentMonth(chosen.getMonth());
+      setCurrentYear(chosen.getFullYear());
+    }
+  };
+  const changeViewMode = (nextMode: 'month' | 'week') => {
+    if (nextMode === 'week') {
+      const current = parseLocalDate(selectedDate);
+      if (current.getFullYear() !== currentYear || current.getMonth() !== currentMonth) {
+        setSelectedDate(formatLocalDateToISO(new Date(currentYear, currentMonth, 1)));
+      }
+    } else {
+      const selected = parseLocalDate(selectedDate);
+      setCurrentMonth(selected.getMonth());
+      setCurrentYear(selected.getFullYear());
+    }
+    setViewMode(nextMode);
+  };
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -70,7 +86,7 @@ export const CalendarView: React.FC = () => {
             { value: 'week', label: 'Semana', iconName: 'Columns' }
           ]}
           value={viewMode}
-          onChange={(val) => setViewMode(val as 'month' | 'week')}
+          onChange={(val) => changeViewMode(val as 'month' | 'week')}
           size="sm"
         />
       </div>
@@ -90,7 +106,7 @@ export const CalendarView: React.FC = () => {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <h2 style={{ fontSize: '1.0625rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            {monthNames[currentMonth]} {currentYear}
+            {viewMode === 'week' ? weekLabel : monthNames[currentMonth] + ' ' + currentYear}
           </h2>
         </div>
 
@@ -116,8 +132,8 @@ export const CalendarView: React.FC = () => {
             Hoy
           </button>
           <button
-            onClick={handlePrevMonth}
-            aria-label="Mes anterior"
+            onClick={() => navigate(-1)}
+            aria-label={viewMode === 'week' ? 'Semana anterior' : 'Mes anterior'}
             style={{
               width: '32px',
               height: '32px',
@@ -132,8 +148,8 @@ export const CalendarView: React.FC = () => {
             <Icon name="ChevronLeft" size={16} />
           </button>
           <button
-            onClick={handleNextMonth}
-            aria-label="Mes siguiente"
+            onClick={() => navigate(1)}
+            aria-label={viewMode === 'week' ? 'Semana siguiente' : 'Mes siguiente'}
             style={{
               width: '32px',
               height: '32px',
