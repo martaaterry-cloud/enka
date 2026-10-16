@@ -321,7 +321,7 @@ export const enkaRepository = {
 
   async saveOccurrenceException(input: {
     recurrence_rule_id: string; recurrence_slot_id: string; original_date: string;
-    exception_type: 'rescheduled' | 'cancelled'; override_start_time?: string | null;
+    exception_type: 'rescheduled' | 'cancelled' | 'overlap_accepted'; override_start_time?: string | null;
     override_end_time?: string | null;
   }): Promise<RepositoryMutationResult> {
     try {
