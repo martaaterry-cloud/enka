@@ -68,7 +68,7 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
       >
         {weekDays.map(item => {
           const isSelected = item.dateStr === selectedDate;
-          const dayActivities = activities.filter(a => a.date === item.dateStr);
+          const dayActivities = activities.filter(a => a.date === item.dateStr && !a.isCancelled && !a.title.startsWith('Trabajo · Syte Automation'));
 
           return (
             <button
@@ -144,7 +144,11 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
 
         {weekDays.map(item => {
           const isSelected = item.dateStr === selectedDate;
-          const dayActs = activities.filter(a => a.date === item.dateStr);
+          const dayActs = activities.filter(a => a.date === item.dateStr).sort((a, b) => (a.startTime ?? '99:99').localeCompare(b.startTime ?? '99:99'));
+          const visibleActs = dayActs.filter(a => !a.isCancelled);
+          const workOnly = visibleActs.length > 0 && visibleActs.every(a => a.title.startsWith('Trabajo · Syte Automation'));
+          const displayActs = visibleActs.filter(a => !a.title.startsWith('Trabajo · Syte Automation'));
+          const hiddenCount = Math.max(0, displayActs.length - 3);
 
           return (
             <div
@@ -181,13 +185,13 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
                 </div>
 
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  {dayActs.length === 0 ? (
+                  {visibleActs.length === 0 || workOnly ? (
                     <span style={{ fontSize: '0.6875rem', color: 'var(--status-confirmed)', fontStyle: 'italic' }}>
-                      Libre
+                      {workOnly ? 'Solo trabajo' : 'Libre'}
                     </span>
                   ) : (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
-                      {dayActs.map(act => {
+                      {displayActs.slice(0, 3).map(act => {
                         const cat = categoryMap.get(act.categoryId);
                         return (
                           <span
@@ -209,10 +213,11 @@ export const WeekGrid: React.FC<WeekGridProps> = ({
                             }}
                             className="truncate"
                           >
-                            {act.title}
+                            {act.startTime ? act.startTime.slice(0, 5) + ' · ' : ''}{act.title}
                           </span>
                         );
                       })}
+                      {hiddenCount > 0 && <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>+{hiddenCount} más</span>}
                     </div>
                   )}
                 </div>
