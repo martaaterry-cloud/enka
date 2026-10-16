@@ -38,9 +38,16 @@ export const ConflictDecision: React.FC<{ activity: Activity; conflicts: Activit
         });
         if (!result.success) throw result.error || new Error('No se pudo guardar.');
       } else if (!target.isRecurrent) {
+        let metadata: Record<string, unknown> = {};
+        if (decision === 'both') {
+          const existing = await enkaRepository.fetchActivities();
+          if (existing.error || !existing.data) throw existing.error || new Error('No se pudieron leer los datos actuales.');
+          metadata = { ...(existing.data.find(a => a.id === target.id)?.metadata ?? {}),
+            conflict_decision: 'attend_both', conflict_with: activity.id };
+        }
         const result = await enkaRepository.updateActivity(target.id, decision === 'cancelled'
           ? { status: 'cancelled' }
-          : decision === 'both' ? { metadata: { conflict_decision: 'attend_both', conflict_with: activity.id } }
+          : decision === 'both' ? { metadata }
           : decision === 'late' ? { start_time: time } : { end_time: time });
         if (result.error) throw result.error;
       } else throw new Error('Esta rutina necesita un ajuste manual.');
