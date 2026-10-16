@@ -3,6 +3,7 @@ import { useEnka } from '../../context';
 import { ModalSheet } from '../../components/ui/ModalSheet';
 import { CloudActivityEditor } from './CloudActivityEditor';
 import { RecurringOccurrenceEditor } from './RecurringOccurrenceEditor';
+import { ConflictDecision, findAgendaConflicts } from './ConflictDecision';
 import type { Activity, CertaintyLevel } from '../../models/activity';
 import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
@@ -61,6 +62,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
     ? activities.find(a => a.id !== activity.id && a.date === activity.date &&
         /balonmano/i.test(a.title) && a.isRecurrent && !a.isCancelled)
     : undefined;
+  const conflicts = findAgendaConflicts(activity, activities);
   const formattedDate = formatSpanishDateHeader(activity.date);
   const relativeLabel = getRelativeDayLabel(activity.date);
 
@@ -246,7 +248,8 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
                 {!conflictingHandball && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>El entrenamiento no figura como pendiente en tu agenda.</span>}
               </div>
             )}
-                        {/* Overlap Callout if exists */}
+                        {conflicts.length > 0 && <ConflictDecision activity={activity} conflicts={conflicts} onClose={onClose} />}
+            {/* Overlap Callout if exists */}
             {activity.knownOverlap?.accepted && (
               <OverlapCallout
                 withActivityTitle={activity.knownOverlap.withActivityTitle}
