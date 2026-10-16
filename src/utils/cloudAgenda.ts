@@ -72,6 +72,12 @@ export function expandWeeklyRecurrences(
         const exception = exceptions.find(e => e.recurrence_rule_id === rule.id &&
           e.original_date === date && (!e.recurrence_slot_id || e.recurrence_slot_id === slot.id));
         if (exception && /cancel|skip|omit/i.test(exception.exception_type)) continue;
+        // These two personal graduations supersede Friday handball attendance.
+        // Keep the missed session visible as an absence, not as another confirmed commitment.
+        // A saved exception takes priority if the user later changes her decision.
+        const graduationAbsence = !exception &&
+          rule.title.startsWith('Balonmano') &&
+          (date === '2026-11-13' || date === '2026-11-27');
 
         items.push({
           id: 'cloud-recurring:' + rule.id + ':' + slot.id + ':' + date,
@@ -81,6 +87,8 @@ export function expandWeeklyRecurrences(
           startTime: hhmm(exception?.override_start_time ?? slot.start_time),
           endTime: hhmm(exception?.override_end_time ?? slot.end_time),
           certainty: 'confirmed',
+          isCancelled: graduationAbsence,
+          cancellationReason: graduationAbsence ? 'No asistiré: graduación' : undefined,
           isRecurrent: true,
           recurrenceSeriesId: rule.id,
           isOccurrenceException: Boolean(exception),
