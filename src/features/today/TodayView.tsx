@@ -19,7 +19,8 @@ export const TodayView: React.FC = () => {
     categories,
     selectedCategoryFilter,
     setSelectedCategoryFilter,
-    openCreateModal
+    openCreateModal,
+    setCurrentTab
   } = useEnka();
 
   const todayDateStr = React.useMemo(() => getTodayDateString(), []);
@@ -86,6 +87,11 @@ export const TodayView: React.FC = () => {
           </h1>
         </div>
 
+        <button type="button" onClick={() => setCurrentTab('planning')} title="Mi gimnasio" aria-label="Abrir mi gimnasio"
+          style={{ padding: 8, border: '1px solid var(--border-default)', borderRadius: 'var(--radius-full)',
+            background: 'var(--bg-surface)', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center' }}>
+          <Icon name="Dumbbell" size={17} />
+        </button>
         {/* Discrete context badge */}
         <div
           style={{
