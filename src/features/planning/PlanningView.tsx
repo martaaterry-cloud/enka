@@ -55,6 +55,7 @@ export const PlanningView: React.FC = () => {
     if (a.isAllDay || a.isTimePending || !a.startTime || !a.endTime) return true;
     return toMinutes(start) < toMinutes(a.endTime) && toMinutes(a.startTime) < toMinutes(end);
   });
+  const nextSplit = splits.find(s => !gymRows.some(a => a.title.trim().toLowerCase() === s.toLowerCase() || a.metadata?.gym_split === s)) ?? splits[0];
   const suggestions = suggestGymSlots(week, activities, rows, nextSplit, goal?.id, gymCategory);
   const refresh = async () => {
     await load();
@@ -119,7 +120,6 @@ export const PlanningView: React.FC = () => {
     } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo actualizar'); }
     finally { setSaving(false); }
   };
-  const nextSplit = splits.find(s => !gymRows.some(a => a.title.trim().toLowerCase() === s.toLowerCase() || a.metadata?.gym_split === s)) ?? splits[0];
   return <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
     <div>
       <h1 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Mi gimnasio</h1>
