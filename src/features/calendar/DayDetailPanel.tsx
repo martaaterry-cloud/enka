@@ -176,6 +176,11 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
                   )}
                 </div>
 
+                {/graduaci[oó]n/i.test(act.title) && (act.date === '2026-11-13' || act.date === '2026-11-27') && (
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)', background: 'var(--bg-surface)', padding: '4px 7px', borderRadius: 'var(--radius-xs)', alignSelf: 'flex-start' }}>
+                    <Icon name="CalendarX" size={12} /> No voy a balonmano ese día
+                  </div>
+                )}
                 {act.isSportMatch && (
                   <div style={{ fontSize: '0.6875rem', color: '#B91C1C', backgroundColor: 'rgba(239, 68, 68, 0.08)', padding: '3px 6px', borderRadius: 'var(--radius-xs)', marginTop: '2px' }}>
                     <strong>{act.isHomeMatch ? 'Partido en Bullas' : 'Partido fuera'}</strong> vs {act.opponent}.
