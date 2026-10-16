@@ -9,7 +9,7 @@ export function findAgendaConflicts(item: Activity, others: Activity[]): Activit
     if (a.id === item.id || a.date !== item.date || a.isCancelled || a.isAllDay || a.isTimePending || !a.startTime) return false;
     const itemEnd = item.endTime ? minutes(item.endTime) : minutes(item.startTime) + 1;
     const otherEnd = a.endTime ? minutes(a.endTime) : minutes(a.startTime) + 1;
-    return minutes(item.startTime!) < otherEnd && minutes(a.startTime!) < itemEnd;
+    return minutes(item.startTime ?? '') < otherEnd && minutes(a.startTime ?? '') < itemEnd;
   });
 }
 
