@@ -4,9 +4,9 @@ import { enkaRepository } from '../../services/enka';
 
 const minutes = (s: string) => Number(s.slice(0, 2)) * 60 + Number(s.slice(3, 5));
 export function findAgendaConflicts(item: Activity, others: Activity[]): Activity[] {
-  if (item.isCancelled || item.isAllDay || item.isTimePending || !item.startTime) return [];
+  if (item.isCancelled || item.isAllDay || item.isTimePending || !item.startTime || item.knownOverlap?.accepted) return [];
   return others.filter(a => {
-    if (a.id === item.id || a.date !== item.date || a.isCancelled || a.isAllDay || a.isTimePending || !a.startTime) return false;
+    if (a.id === item.id || a.date !== item.date || a.isCancelled || a.isAllDay || a.isTimePending || !a.startTime || a.knownOverlap?.accepted) return false;
     const itemEnd = item.endTime ? minutes(item.endTime) : minutes(item.startTime ?? '') + 1;
     const otherEnd = a.endTime ? minutes(a.endTime) : minutes(a.startTime ?? '') + 1;
     return minutes(item.startTime ?? '') < otherEnd && minutes(a.startTime ?? '') < itemEnd;
