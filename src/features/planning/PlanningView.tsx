@@ -3,6 +3,7 @@ import { useEnka } from '../../context';
 import { enkaRepository } from '../../services/enka';
 import type { DbActivity, DbPlanningGoal } from '../../services/enka';
 import { formatLocalDateToISO, getTodayDateString, getWeekRange } from '../../utils/dateUtils';
+import { suggestGymSlots } from './gymSuggestions';
 
 const splits = ['Torso 1', 'Pierna 1', 'Torso 2', 'Pierna 2'] as const;
 type Split = typeof splits[number];
@@ -53,6 +54,7 @@ export const PlanningView: React.FC = () => {
     if (a.isAllDay || a.isTimePending || !a.startTime || !a.endTime) return true;
     return toMinutes(start) < toMinutes(a.endTime) && toMinutes(a.startTime) < toMinutes(end);
   });
+  const suggestions = suggestGymSlots(week, activities, rows, split, goal?.id, gymCategory);
   const refresh = async () => {
     await load();
     window.dispatchEvent(new Event('enka:data-changed'));
@@ -123,6 +125,22 @@ export const PlanningView: React.FC = () => {
           </button>}
         </div>;
       })}
+    </section>
+    <section style={{ padding: 14, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 12, display: 'grid', gap: 10 }}>
+      <strong>Huecos para {split}</strong>
+      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+        Propuestas según tus compromisos conocidos. Comprueba el desplazamiento, la comida y tu descanso antes de confirmar.
+      </p>
+      {suggestions.length === 0 && <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+        No hay huecos claros esta semana. Puedes elegir manualmente otra fecha u hora.
+      </p>}
+      {suggestions.map(item => <button type="button" key={item.date + item.start} onClick={() => {
+        setDate(item.date); setStart(item.start); setEnd(item.end);
+      }} style={{ textAlign: 'left', padding: 10, border: '1px solid var(--border-default)',
+        borderRadius: 9, background: date === item.date && start === item.start ? 'var(--bg-surface-elevated)' : 'var(--bg-surface-subtle)' }}>
+        <strong style={{ fontSize: '0.82rem' }}>{item.label} · {item.start}–{item.end}</strong>
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{item.reason}</div>
+      </button>)}
     </section>
     <section style={{ padding: 14, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 12, display: 'grid', gap: 10 }}>
       <strong>Programar o registrar entrenamiento</strong>
