@@ -50,11 +50,7 @@ export const EnkaProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
 
   const [activities, setActivities] = useState<Activity[]>(() => {
-    // One-time reset of old test data on each device; never touches auth tokens.
-    if (localStorage.getItem('enka:reset-2026-10') !== 'complete') {
-      localStorage.removeItem(LOCAL_STORAGE_KEY_ACTIVITIES);
-      localStorage.setItem('enka:reset-2026-10', 'complete');
-    }
+    // Preserve existing device activities. Migration must always be explicit and reversible.
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY_ACTIVITIES);
     if (saved) {
       try {

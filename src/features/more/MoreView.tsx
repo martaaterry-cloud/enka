@@ -25,6 +25,30 @@ export const MoreView: React.FC = () => {
   const { theme, setTheme, projects } = useEnka();
   const { user, signOut } = useAuth();
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [backupNotice, setBackupNotice] = useState('');
+  const exportLocalBackup = () => {
+    try {
+      const raw = localStorage.getItem('enka:activities');
+      const payload = {
+        format: 'enka-device-activities-backup', version: 1,
+        exportedAt: new Date().toISOString(),
+        origin: window.location.origin,
+        activities: raw === null ? null : JSON.parse(raw)
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'enka-copia-local-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setBackupNotice('Se ha preparado la copia local de este dispositivo. Guárdala en un lugar privado.');
+    } catch {
+      setBackupNotice('No se pudo generar la copia. Los datos originales siguen intactos.');
+    }
+  };
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   useEffect(() => {
     const onUpdate = () => setUpdateAvailable(true);
@@ -287,6 +311,20 @@ export const MoreView: React.FC = () => {
             </div>
           </div>
 
+          <section style={{ padding: '12px 14px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
+            borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <strong style={{ fontSize: '0.8125rem' }}>Copia de seguridad del dispositivo</strong>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+              Guarda las actividades locales antes de migrarlas a la nube. La copia solo incluye las actividades de este dispositivo,
+              no las contraseñas, sesiones ni datos de PocketFlow.
+            </p>
+            <button type="button" onClick={exportLocalBackup} style={{ padding: '10px 12px',
+              borderRadius: 'var(--radius-sm)', background: 'var(--bg-surface-subtle)',
+              border: '1px solid var(--border-default)', fontWeight: 700, fontSize: '0.78rem' }}>
+              <Icon name="Download" size={14} /> Exportar actividades locales
+            </button>
+            {backupNotice && <p role="status" style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{backupNotice}</p>}
+          </section>
           {/* Installed build and PWA updates */}
           <div style={{ padding: '12px 14px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <strong style={{ fontSize: '0.8125rem' }}>Versión instalada</strong>
