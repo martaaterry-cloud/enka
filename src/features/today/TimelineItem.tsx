@@ -5,6 +5,7 @@ import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
 import { CertaintyIndicator } from '../../components/ui/CertaintyIndicator';
 import { OverlapCallout } from '../../components/ui/OverlapCallout';
+import { isAcceptedEnglishHandballOverlap } from '../detail/ConflictDecision';
 
 interface TimelineItemProps {
   activity: Activity;
@@ -17,7 +18,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   category,
   isLast = false
 }) => {
-  const { openDetailModal } = useEnka();
+  const { openDetailModal, activities } = useEnka();
 
   return (
     <div
@@ -269,7 +270,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
         )}
 
         {/* Solape Aceptado */}
-        {activity.knownOverlap?.accepted && (
+        {activity.knownOverlap?.accepted && !activities.some(other => isAcceptedEnglishHandballOverlap(activity, other)) && (
           <OverlapCallout
             planNote={activity.knownOverlap.planNote}
             withActivityTitle={activity.knownOverlap.withActivityTitle}
