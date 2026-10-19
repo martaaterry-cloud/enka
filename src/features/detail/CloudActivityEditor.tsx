@@ -15,6 +15,7 @@ export const CloudActivityEditor: React.FC<{activity: Activity; onClose: () => v
   const [pending, setPending] = useState(Boolean(activity.isTimePending));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const save = async () => {
     setBusy(true); setError('');
     try {
@@ -29,6 +30,16 @@ export const CloudActivityEditor: React.FC<{activity: Activity; onClose: () => v
     } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo guardar'); }
     finally { setBusy(false); }
   };
+  const remove = async () => {
+    setBusy(true); setError('');
+    try {
+      const result = await enkaRepository.deleteActivity(activity.id);
+      if (!result.success) throw result.error ?? new Error('No se pudo eliminar la actividad.');
+      window.dispatchEvent(new Event('enka:data-changed'));
+      onClose();
+    } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo eliminar'); }
+    finally { setBusy(false); }
+  };
   const fieldStyle: React.CSSProperties = { width: '100%', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', padding: 10, border: '1px solid var(--border-default)', borderRadius: 8, background: 'var(--bg-surface-subtle)', color: 'var(--text-primary)' };
   return <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0, maxWidth: '100%' }}>
     <strong>Editar actividad</strong>
@@ -40,6 +51,24 @@ export const CloudActivityEditor: React.FC<{activity: Activity; onClose: () => v
     {!pending && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, minWidth: 0 }}><label>Inicio<input style={fieldStyle} type="time" value={start} onChange={e => setStart(e.target.value)}/></label><label>Fin<input style={fieldStyle} type="time" value={end} onChange={e => setEnd(e.target.value)}/></label></div>}
     <label>Notas<textarea style={fieldStyle} value={notes} onChange={e => setNotes(e.target.value)}/></label>
     <button type="button" disabled={busy} onClick={() => void save()} style={{ padding: 12, background: "var(--text-primary)", color: "var(--text-inverse)", borderRadius: 8, position: "sticky", bottom: 0, zIndex: 1 }}>{busy ? 'Guardando…' : 'Guardar cambios'}</button>
+    {!confirmDelete ? (
+      <button type="button" disabled={busy} onClick={() => setConfirmDelete(true)}
+        style={{ padding: 10, border: '1px solid rgba(239,68,68,.35)', color: '#dc2626', borderRadius: 8 }}>
+        Eliminar actividad
+      </button>
+    ) : (
+      <div role="group" aria-label="Confirmar eliminación" style={{ padding: 12, border: '1px solid rgba(239,68,68,.35)', borderRadius: 8, display: 'grid', gap: 8 }}>
+        <strong>¿Eliminar «{activity.title}»?</strong>
+        <span style={{ fontSize: '0.8rem' }}>Se eliminará de Supabase y de los demás dispositivos. No se puede deshacer.</span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" disabled={busy} onClick={() => setConfirmDelete(false)}>Volver</button>
+          <button type="button" disabled={busy} onClick={() => void remove()}
+            style={{ padding: 9, background: '#b91c1c', color: '#fff', borderRadius: 8 }}>
+            {busy ? 'Eliminando…' : 'Sí, eliminar'}
+          </button>
+        </div>
+      </div>
+    )}
     {error && <p role="alert" style={{ color: '#dc2626' }}>{error}</p>}
   </div>;
 };

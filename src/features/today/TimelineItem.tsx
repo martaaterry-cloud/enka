@@ -235,7 +235,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
             </div>
           )}
 
-          {activity.preparationMinutes && (
+          {Boolean(activity.preparationMinutes && activity.preparationMinutes > 0) && (
             <div
               style={{
                 display: 'flex',
@@ -246,7 +246,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
               }}
             >
               <Icon name="Timer" size={10} />
-              <span>1h antes</span>
+              <span>{activity.preparationMinutes === 60 ? '1h antes' : `${activity.preparationMinutes} min antes`}</span>
             </div>
           )}
         </div>
