@@ -6,7 +6,7 @@ import { Icon } from '../../components/ui/Icon';
 import { CertaintyIndicator } from '../../components/ui/CertaintyIndicator';
 import { OverlapCallout } from '../../components/ui/OverlapCallout';
 import { formatSpanishDateHeader } from '../../utils/dateUtils';
-import { findAgendaConflicts } from '../detail/ConflictDecision';
+import { findAgendaConflicts, isAcceptedEnglishHandballOverlap } from '../detail/ConflictDecision';
 
 interface DayDetailPanelProps {
   date: string;
@@ -201,7 +201,7 @@ export const DayDetailPanel: React.FC<DayDetailPanelProps> = ({
                 {findAgendaConflicts(act, activities).length > 0 && (
                   <div style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)' }}><Icon name="AlertCircle" size={12}/> Coincide con otra actividad · Toca para resolver</div>
                 )}
-                {act.knownOverlap?.accepted && (
+                {act.knownOverlap?.accepted && !activities.some(other => isAcceptedEnglishHandballOverlap(act, other)) && (
                   <OverlapCallout planNote={act.knownOverlap.planNote} />
                 )}
 
