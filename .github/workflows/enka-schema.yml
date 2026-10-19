@@ -1,0 +1,28 @@
+name: Enka real-schema migration (isolated)
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  schema-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_PASSWORD: enka-isolated-only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild Enka schema from repository migration in disposable PostgreSQL
+        env:
+          ENKA_SCHEMA_TEST_CONTAINER: ${{ job.services.postgres.id }}
+        run: bash scripts/testEnkaSchema.sh
