@@ -3,10 +3,20 @@ import type { Activity } from '../../models/activity';
 import { enkaRepository } from '../../services/enka';
 
 const minutes = (s: string) => Number(s.slice(0, 2)) * 60 + Number(s.slice(3, 5));
+export function isAcceptedEnglishHandballOverlap(a: Activity, b: Activity): boolean {
+  // This standing agreement applies to recurring English/handball sessions
+  // on Mondays and Wednesdays only. It does not suppress unrelated collisions.
+  if (!a.isRecurrent || !b.isRecurrent || a.date !== b.date) return false;
+  const day = new Date(a.date + 'T12:00:00').getDay();
+  if (day !== 1 && day !== 3) return false;
+  const english = (title: string) => /^Inglés\s*·\s*Academia Método/i.test(title);
+  const handball = (title: string) => /^Balonmano\s*·\s*(lunes|miércoles|miercoles)/i.test(title);
+  return (english(a.title) && handball(b.title)) || (english(b.title) && handball(a.title));
+}
 export function findAgendaConflicts(item: Activity, others: Activity[]): Activity[] {
   if (item.isCancelled || item.isAllDay || item.isTimePending || !item.startTime || item.knownOverlap?.accepted) return [];
   return others.filter(a => {
-    if (a.id === item.id || a.date !== item.date || a.isCancelled || a.isAllDay || a.isTimePending || !a.startTime || a.knownOverlap?.accepted) return false;
+    if (a.id === item.id || a.date !== item.date || a.isCancelled || a.isAllDay || a.isTimePending || !a.startTime || a.knownOverlap?.accepted || isAcceptedEnglishHandballOverlap(item, a)) return false;
     const itemEnd = item.endTime ? minutes(item.endTime) : minutes(item.startTime ?? '') + 1;
     const otherEnd = a.endTime ? minutes(a.endTime) : minutes(a.startTime ?? '') + 1;
     return minutes(item.startTime ?? '') < otherEnd && minutes(a.startTime ?? '') < itemEnd;
