@@ -87,6 +87,17 @@ if (import.meta.env.PROD) {
   window.addEventListener('enka:apply-update', () => {
     void updateSW(true);
   });
+  // Pages can change while an installed PWA remains open for days.
+  // Revalidate the service worker whenever the app resumes, not only on reload.
+  const checkForNewVersion = () => {
+    void navigator.serviceWorker?.getRegistration(import.meta.env.BASE_URL)
+      .then(registration => registration?.update())
+      .catch(error => console.warn('No se pudo comprobar la versión de Enka', error));
+  };
+  window.addEventListener('focus', checkForNewVersion);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) checkForNewVersion();
+  });
 }
 
 createRoot(document.getElementById('root')!).render(
