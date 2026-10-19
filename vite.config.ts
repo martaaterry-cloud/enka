@@ -16,7 +16,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: ['enka-icon.svg', 'favicon.svg', 'robots.txt'],
       manifest: {
         name: 'Enka — Tu tiempo, a tu manera',
