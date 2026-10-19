@@ -9,6 +9,7 @@ GRANT EXECUTE ON FUNCTION auth.uid() TO PUBLIC;
 CREATE TABLE public.enka_activities(id uuid PRIMARY KEY,user_id uuid NOT NULL,title text);
 ALTER TABLE public.enka_activities ENABLE ROW LEVEL SECURITY;
 CREATE POLICY own ON public.enka_activities FOR ALL USING(auth.uid()=user_id) WITH CHECK(auth.uid()=user_id);
+GRANT SELECT ON public.enka_activities TO anon;
 GRANT SELECT,INSERT,UPDATE,DELETE ON public.enka_activities TO authenticated;
 INSERT INTO enka_activities VALUES
  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','11111111-1111-4111-8111-111111111111','fictional A'),
