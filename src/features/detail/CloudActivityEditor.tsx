@@ -20,10 +20,30 @@ export const CloudActivityEditor: React.FC<{activity: Activity; onClose: () => v
     setBusy(true); setError('');
     try {
       if (!title.trim() || !date || (!pending && start && end && start >= end)) throw new Error('Comprueba los datos y las horas.');
-      const result = await enkaRepository.updateActivity(activity.id, {
-        title: title.trim(), start_date: date, category_id: categoryId || null, location_id: locationId || null, start_time: pending || !start ? null : start,
+      const confirmedFixture = activity.isSportMatch && !pending && Boolean(start && end);
+      const updates: Parameters<typeof enkaRepository.updateActivity>[1] = {
+        title: title.trim(), start_date: date, category_id: categoryId || null,
+        location_id: locationId || null,
+        start_time: pending || !start ? null : start,
         end_time: pending || !end ? null : end, is_time_pending: pending, notes
-      });
+      };
+      if (confirmedFixture) {
+        // An initially uncertain weekend fixture becomes one single-day event.
+        // Clear the old range and certainty; preserve any other event metadata.
+        const current = await enkaRepository.fetchActivities();
+        if (current.error || !current.data) throw current.error ?? new Error('No se pudo comprobar el partido.');
+        const source = current.data.find(a => a.id === activity.id);
+        if (!source) throw new Error('No se encontró el partido en Supabase.');
+        const { weekend_start: _weekendStart, weekend_end: _weekendEnd, ...metadata } = source.metadata ?? {};
+        updates.end_date = date;
+        updates.start_window_start_date = null;
+        updates.start_window_end_date = null;
+        updates.is_date_pending = false;
+        updates.is_all_day = false;
+        updates.certainty = 'confirmed';
+        updates.metadata = metadata;
+      }
+      const result = await enkaRepository.updateActivity(activity.id, updates);
       if (result.error) throw result.error;
       window.dispatchEvent(new Event('enka:data-changed'));
       onClose();

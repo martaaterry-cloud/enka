@@ -9,25 +9,26 @@ export function convertCloudActivity(record: DbActivity): Activity | null {
   if (!record.start_date) return null;
   const details = record.metadata ?? {};
   const isFixture = Boolean(details.match_venue) || /bullense/i.test(record.title);
+  const fixtureHasFixedSlot = isFixture && !record.is_date_pending && !record.is_time_pending && Boolean(record.start_time && record.end_time);
   return {
     id: record.id,
     title: record.title,
     categoryId: record.category_id ?? '',
     date: record.start_date,
-    endDate: record.end_date ?? undefined,
+    endDate: fixtureHasFixedSlot ? undefined : record.end_date ?? undefined,
     startTime: hhmm(record.start_time),
     endTime: hhmm(record.end_time),
     isAllDay: record.is_all_day && !record.metadata?.weekend_start,
     isTimePending: record.is_time_pending,
     isEndTimeUnknown: record.is_end_time_unknown,
-    certainty: record.certainty === 'pending' ? 'pending_time' : record.certainty as Activity['certainty'],
+    certainty: fixtureHasFixedSlot ? 'confirmed' : record.certainty === 'pending' ? 'pending_time' : record.certainty as Activity['certainty'],
     notes: isFixture ? (record.start_time ? 'Llegar al pabellón 1 hora antes.' : 'Día y hora por confirmar') :
       details.source?.startsWith('enka-') ? undefined : record.notes ?? undefined,
     timeNote: record.time_note ?? undefined,
     preparationMinutes: record.prep_before_minutes,
     isCancelled: record.status === 'cancelled',
     knownOverlap: details.conflict_decision === 'attend_both' ? { withActivityTitle: 'Otra actividad', accepted: true, planNote: 'Solapamiento aceptado' } : undefined,
-    isTrip: Boolean(record.end_date && record.end_date !== record.start_date),
+    isTrip: !fixtureHasFixedSlot && Boolean(record.end_date && record.end_date !== record.start_date),
     isSportMatch: isFixture,
     isHomeMatch: details.match_venue === 'home' || (!details.match_venue && (/\\(casa\\)/i.test(record.title) || record.notes?.includes('Partido en Bullas'))),
     opponent: typeof details.opponent === 'string' ? details.opponent : undefined,
