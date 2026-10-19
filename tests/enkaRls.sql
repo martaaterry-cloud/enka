@@ -24,4 +24,22 @@ DELETE FROM enka_activities WHERE title='fictional B';
 DO $test$ BEGIN IF (SELECT count(*) FROM enka_activities) <> 1 THEN RAISE EXCEPTION 'USER_A_DELETE'; END IF; END $test$;
 RESET ROLE;
 DO $test$ BEGIN IF (SELECT count(*) FROM enka_activities)<>2 THEN RAISE EXCEPTION 'ROW_LOST'; END IF; END $test$;
+
+-- P0.2: user A cannot transfer row ownership; catch WITH CHECK violation.
+SET ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',false);
+DO $security$
+BEGIN
+  BEGIN
+    UPDATE public.enka_activities SET user_id='22222222-2222-4222-8222-222222222222' WHERE title='fictional A';
+    RAISE EXCEPTION 'OWNERSHIP_TRANSFER_ALLOWED';
+  EXCEPTION WHEN check_violation OR insufficient_privilege THEN NULL;
+  END;
+  IF (SELECT count(*) FROM public.enka_activities WHERE title='fictional B') <> 0 THEN RAISE EXCEPTION 'USER_B_VISIBLE'; END IF;
+END $security$;
+RESET ROLE;
+DO $security$ BEGIN
+ IF (SELECT count(*) FROM public.enka_activities WHERE user_id='11111111-1111-4111-8111-111111111111')<>1 THEN RAISE EXCEPTION 'OWNER_CHANGED'; END IF;
+END $security$;
+
 SELECT 'ENKA_RLS_OK' AS result;
