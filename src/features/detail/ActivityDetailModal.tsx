@@ -3,7 +3,7 @@ import { useEnka } from '../../context';
 import { ModalSheet } from '../../components/ui/ModalSheet';
 import { CloudActivityEditor } from './CloudActivityEditor';
 import { RecurringOccurrenceEditor } from './RecurringOccurrenceEditor';
-import { ConflictDecision, findAgendaConflicts } from './ConflictDecision';
+import { ConflictDecision, findAgendaConflicts, isAcceptedEnglishHandballOverlap } from './ConflictDecision';
 import type { Activity, CertaintyLevel } from '../../models/activity';
 import type { Category } from '../../models/category';
 import { Icon } from '../../components/ui/Icon';
@@ -250,7 +250,7 @@ const ActivityDetailContent: React.FC<ActivityDetailContentProps> = ({ activity,
             )}
                         {conflicts.length > 0 && <ConflictDecision activity={activity} conflicts={conflicts} onClose={onClose} />}
             {/* Overlap Callout if exists */}
-            {activity.knownOverlap?.accepted && (
+            {activity.knownOverlap?.accepted && !activities.some(other => isAcceptedEnglishHandballOverlap(activity, other)) && (
               <OverlapCallout
                 withActivityTitle={activity.knownOverlap.withActivityTitle}
                 planNote={activity.knownOverlap.planNote}
