@@ -10,6 +10,8 @@ CREATE TABLE public.enka_activities(id uuid PRIMARY KEY,user_id uuid NOT NULL,ti
 ALTER TABLE public.enka_activities ENABLE ROW LEVEL SECURITY;
 CREATE POLICY own ON public.enka_activities FOR ALL USING(auth.uid()=user_id) WITH CHECK(auth.uid()=user_id);
 GRANT SELECT ON public.enka_activities TO anon;
+GRANT TRUNCATE ON public.enka_activities TO anon,authenticated;
+REVOKE TRUNCATE ON public.enka_activities FROM anon,authenticated;
 GRANT SELECT,INSERT,UPDATE,DELETE ON public.enka_activities TO authenticated;
 INSERT INTO enka_activities VALUES
  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','11111111-1111-4111-8111-111111111111','fictional A'),
@@ -42,4 +44,18 @@ DO $security$ BEGIN
  IF (SELECT count(*) FROM public.enka_activities WHERE user_id='11111111-1111-4111-8111-111111111111')<>1 THEN RAISE EXCEPTION 'OWNER_CHANGED'; END IF;
 END $security$;
 
+SET ROLE authenticated;
+DO $deny$
+BEGIN
+ BEGIN
+  EXECUTE 'TRUNCATE public.enka_activities';
+  RAISE EXCEPTION 'TRUNCATE_ALLOWED';
+ EXCEPTION WHEN insufficient_privilege THEN NULL;
+ END;
+END $deny$;
+RESET ROLE;
+DO $check$
+BEGIN
+ IF (SELECT count(*) FROM public.enka_activities) <> 2 THEN RAISE EXCEPTION 'ROW_LOST_AFTER_TRUNCATE_ATTEMPT'; END IF;
+END $check$;
 SELECT 'ENKA_RLS_OK' AS result;
