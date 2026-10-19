@@ -93,7 +93,14 @@ export function expandWeeklyRecurrences(
           isRecurrent: true,
           recurrenceSeriesId: rule.id,
           isOccurrenceException: Boolean(exception),
-          knownOverlap: exception?.exception_type === 'overlap_accepted' ? { withActivityTitle: 'Otra actividad', accepted: true, planNote: 'Solapamiento aceptado' } : undefined,
+          knownOverlap: exception?.exception_type === 'overlap_accepted'
+            ? { withActivityTitle: 'Otra actividad', accepted: true, planNote: 'Solapamiento aceptado' }
+            : ((isoWeekday(day) === 1 || isoWeekday(day) === 3) &&
+                (/^Inglés\\s*·\\s*Academia Método/i.test(rule.title) ||
+                 /^Balonmano\\s*·\\s*(lunes|miércoles|miercoles)/i.test(rule.title)))
+              ? { withActivityTitle: 'Inglés y balonmano', accepted: true,
+                  planNote: 'Coincidencia semanal aceptada' }
+              : undefined,
           notes: undefined, // logistics belong in the planner, not the visible event description
           locationId: exception?.override_location_id ?? slot.location_id ?? undefined,
           preparationMinutes: slot.prep_before_minutes,
